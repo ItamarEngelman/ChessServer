@@ -11,7 +11,7 @@ pygame.init()
 
 
 # draw main game board
-def draw_board():
+def draw_board(): #game
     for i in range(32):
         column = i % 4
         row = i // 4
@@ -36,7 +36,7 @@ def draw_board():
 
 
 # draw pieces onto board
-def draw_pieces():
+def draw_pieces(): # player, used in game
     for i in range(len(white_pieces)):
         index = piece_list.index(white_pieces[i])
         if white_pieces[i] == 'pawn':
@@ -66,7 +66,7 @@ def draw_pieces():
 
 # check king valid moves
 def check_king(position, color):
-    moves_list = []
+    moves_list = [] # all the check is in the pieces classes
     castle_moves = check_castling()
     if color == 'white':
         enemies_list = black_locations
@@ -224,7 +224,7 @@ def check_knight(position, color):
 
 
 # check for valid moves for just selected piece
-def check_valid_moves():
+def check_valid_moves(): # in pieces
     if turn_step < 2:
         options_list = white_options
     else:
@@ -234,7 +234,7 @@ def check_valid_moves():
 
 
 # draw valid moves on screen
-def draw_valid(moves):
+def draw_valid(moves): # game
     if turn_step < 2:
         color = 'red'
     else:
@@ -244,7 +244,7 @@ def draw_valid(moves):
 
 
 # draw captured pieces on side of screen
-def draw_captured():
+def draw_captured():# in player, used in game
     for i in range(len(captured_pieces_white)):
         captured_piece = captured_pieces_white[i]
         index = piece_list.index(captured_piece)
@@ -256,7 +256,7 @@ def draw_captured():
 
 
 # draw a flashing square around king if in check
-def draw_check():
+def draw_check(): # בעייההה
     global check
     check = False
     if turn_step < 2:
@@ -306,7 +306,7 @@ def check_ep(old_coords, new_coords):
 
 
 # add castling
-def check_castling():
+def check_castling(): # in player class
     # king must not currently be in check, neither the rook nor king has moved previously, nothing between
     # and the king does not pass through or finish on an attacked piece
     castle_moves = []  # store each valid castle move as [((king_coords), (castle_coords))]
@@ -429,7 +429,7 @@ def check_promo_select():
     elif black_promote and left_click and x_pos > 7 and y_pos < 4:
         black_pieces[promo_index] = black_promotions[y_pos]
 
-def check_options(pieces, locations, turn):
+def check_options(pieces, locations, turn): #we will check for each piece speretly  its  valid moves, not all of the pieces combine all the time
     global castling_moves
     moves_list = []
     all_moves_list = []

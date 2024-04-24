@@ -1,8 +1,11 @@
 import pygame
 pygame.init()
 
+# WIDTH = 1000
+# HEIGHT = 900
 WIDTH = 1000
 HEIGHT = 900
+
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
 pygame.display.set_caption('Two-Player Pygame Chess!')
 font = pygame.font.Font('freesansbold.ttf', 20)
@@ -87,3 +90,18 @@ black_promote = False
 promo_index = 100
 check = False
 castling_moves = []
+# images paths for white
+image_path_white_queen = 'assets/images/white queen.png'
+image_path_white_king = 'assets/images/white king.png'
+image_path_white_rook = 'assets/images/white rook.png'
+image_path_white_bishop = 'assets/images/white bishop.png'
+image_path_white_knight = 'assets/images/white knight.png'
+image_path_white_pawn = 'assets/images/white pawn.png'
+
+#images path for black
+image_path_black_queen = 'assets/images/black queen.png'
+image_path_black_king = 'assets/images/black king.png'
+image_path_black_rook = 'assets/images/black rook.png'
+image_path_black_bishop = 'assets/images/black bishop.png'
+image_path_black_knight = 'assets/images/black knight.png'
+image_path_black_pawn = 'assets/images/black pawn.png'
