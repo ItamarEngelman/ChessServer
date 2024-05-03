@@ -15,8 +15,6 @@ def inside_lst(position, lst):
         if move == position:
             return True
     return False
-
-
 def insdie_lst_of_lists(position, lst_of_lists):
     """
 
@@ -30,6 +28,16 @@ def insdie_lst_of_lists(position, lst_of_lists):
                 return True
     return False
 
-lst_of_lists = [[1,2],[9,11],[-4,5],[2,7]]
-item = 2
-print(insdie_lst_of_lists(item, lst_of_lists ))
+def get_key_by_value(d, value):
+    """
+    a function that searching for a key in a dict by value. return a  singe ( ! ) key.
+    :param d: a dicinary where the key and the value is
+    :param value: the value of key we are looking for
+    :return: if the key is in  the dict, it return the key. if not, return None
+    """
+    for key, val in d.items():
+        if val == value:
+            return key
+    return None
+dict_of_promotions = {"Bishop": (8, 0), "Knight": (8, 1), "Rook": (8, 2), "Queen": (8, 3)}
+print(get_key_by_value(dict_of_promotions, (8, 3)))

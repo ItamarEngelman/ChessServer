@@ -12,7 +12,7 @@ class Bishop(Piece):
     def update_position(self, new_position):
         self.position = new_position
     def update_moved(self):
-         self.moved = True
+        self.moved = True
     def update_valid_moves(self, my_player, enemy_player):
         moves_list = []
         for i in range(4):  # up-right, up-left, down-right, down-left
@@ -31,9 +31,12 @@ class Bishop(Piece):
                 x = -1
                 y = 1
             while path:
-                if (self.position[0] + (chain * x), self.position[1] + (chain * y)) not in my_player.get_all_positions():
-                    moves_list.append((self.position[0] + (chain * x), self.position[1] + (chain * y)))
-                    if (self.position[0] + (chain * x), self.position[1] + (chain * y)) in enemy_player.get_all_positions():
+                pos_checked = (self.position[0] + (chain * x), self.position[1] + (chain * y))
+                if pos_checked not in my_player.get_all_positions() and not my_player.check_check(enemy_player, self.position, pos_checked):
+                    moves_list.append(pos_checked)
+                    if pos_checked in enemy_player.get_all_positions():
+                        path = False
+                    if not InBoard(pos_checked):
                         path = False
                     chain += 1
                 else:

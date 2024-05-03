@@ -501,6 +501,7 @@ while run:
             x_coord = event.pos[0] // 100
             y_coord = event.pos[1] // 100
             click_coords = (x_coord, y_coord)
+            print(click_coords)
             if turn_step <= 1:
                 if click_coords == (8, 8) or click_coords == (9, 8):
                     winner = 'black'

@@ -82,11 +82,8 @@ def execute_move(click_coords, valid_moves, this_turn_color, other_turn_color, t
     global selection, this_turn_chose
     if click_coords in this_turn_locations:
         this_turn_chose, this_turn_selected_piece = chose_piece(click_coords, this_turn_color, this_turn_locations, this_turn_pieces)
-        print("\nturn_selected_piece is choosing : " + str(this_turn_selected_piece))
         execute_castling(click_coords, this_turn_locations, this_turn_moves, this_turn_color, this_turn_selected_piece)
     elif click_coords in valid_moves and selection != 100:
-        print(f"this turn color : {this_turn_color}")
-        print("selection in valid moves: " + str(selection))
         this_turn_ep = check_ep(this_turn_color, this_turn_locations[selection], click_coords)
         other_turn_ep = check_ep(other_turn_color, other_turn_locations[selection], click_coords)
         this_turn_locations[selection] = click_coords
@@ -106,7 +103,6 @@ def execute_move(click_coords, valid_moves, this_turn_color, other_turn_color, t
             other_turn_piece_index = other_turn_locations.index(target_coord)
             this_turn_captured_pieces.append(other_turn_pieces[other_turn_piece_index])
             remove_piece(other_turn_piece_index, other_turn_pieces, other_turn_locations, other_turn_moves)
-        print("\nturn_selected_piece moving to vald moves : " + str(this_turn_selected_piece))
         execute_castling(click_coords, this_turn_locations, this_turn_moves, this_turn_color, this_turn_selected_piece)
         reset_turn()
         return False, None, True# הראשון זה האם המשחק נגמר,השני זה המנצח, השלישי אם מהלך יתרחש
@@ -260,7 +256,7 @@ while run:
                 if move_taken:
                     turn_count += 1
                     this_turn_chose = False
-                    this_turn_selected_piece = None # Increment the turn counter after each full turn
+                    this_turn_selected_piece = None  # Increment the turn counter after each full turn
                     reset_turn()
             #debug_game_state()
             draw_turn(this_turn_color)

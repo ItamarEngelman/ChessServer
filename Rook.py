@@ -22,7 +22,6 @@ class Rook(Piece):
                 x = 0
                 y = 1
             elif i == 1:
-
                 x = 0
                 y = -1
             elif i == 2:
@@ -32,9 +31,12 @@ class Rook(Piece):
                 x = -1
                 y = 0
             while path:
-                if (self.position[0] + (chain * x), self.position[1] + (chain * y)) not in my_player.get_all_positions():
-                    moves_list.append((self.position[0] + (chain * x), self.position[1] + (chain * y)))
-                    if (self.position[0] + (chain * x), self.position[1] + (chain * y)) in enemy_player.get_all_positions():
+                position_checked = (self.position[0] + (chain * x), self.position[1] + (chain * y))
+                if not InBoard(position_checked):
+                    path = False
+                elif position_checked not in my_player.get_all_positions() and not my_player.check_check(enemy_player, self.position, position_checked):
+                    moves_list.append(position_checked)
+                    if position_checked in enemy_player.get_all_positions():
                         path = False
                     chain += 1
                 else:

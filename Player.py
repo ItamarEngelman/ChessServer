@@ -7,9 +7,11 @@ from Knight import Knight
 from Pawn import Pawn
 
 class Player():
-    def __init__(self, color):
+    def __init__(self, color, pieces, capture_pieces):
         self.color = color
-        self.initialize_player()
+        self.check = False
+        self.pieces = pieces
+        self.capture_pieces = capture_pieces
     def get_all_positions(self):
         pieces_positions = []
         for piece in self.pieces:
@@ -27,7 +29,7 @@ class Player():
             if piece.type == "Pawn" or piece.type == "King":
                 piece_valid_moves = piece.valid_moves[0]
             else:
-                piece_valid_moves = piece_valid_moves
+                piece_valid_moves = piece.valid_moves
             moves_list.append(piece_valid_moves)
         return moves_list
     def get_pieces_by_type(self, type):
@@ -51,9 +53,110 @@ class Player():
             if piece.position == position:
                 return piece
         return None
-    def draw_pieces(self):
+
+    def update_check(self, enemy_player):
+        """
+        Check if the king is in check by looking at all enemy valid moves.
+
+        :param enemy_player: a player object of the rival player
+        :return: doesn't return anything but updates the check parameter if the king is being under attack.
+        """
+        king = self.get_pieces_by_type("King")[0]
+        print(f"Debug: Checking if the king at position {king.position} is in check.")
+
+        # Iterate over all valid moves of all pieces from the enemy player.
+        for piece_valid_moves in enemy_player.get_all_valid_moves():
+            for move in piece_valid_moves:
+                # Print the move being checked against the king's position
+                print(f"Debug: Checking enemy move {move} against king's position {king.position}.")
+                if king.position == move:
+                    # If a match is found, set check to True and break out of the loop
+                    self.check = True
+                    print(f"Debug: King is in check from move {move}.")
+                    break
+            # Break outer loop if check is found
+            if self.check:
+                break
+        # Final status of check
+        print(f"Debug: King check status is {self.check}.")
+
+    def check_check(self, enemy_player, current_pos, new_pos):
+        """
+        a function that check for a move of a piece if after the move is implemended the king is in check
+        :param enemy_player: a player object which represent the enemy player
+        :param current_pos: the current pos of the piece being checked. with that pos we can find  the piece and after our checkinh, we will update the
+        position of the piece again to the  current_pos
+        :param new_pos: the new position caused by the  move that we check
+        :return:  true if the king is in check after the move anf False if he isn't.
+        """
+        selected_piece = self.get_piece_by_position(current_pos)
+        king = self.get_pieces_by_type("King")[0]
+        selected_piece.update_position(new_pos)
+
+        for piece_valid_moves in enemy_player.get_all_valid_moves():
+            for move in piece_valid_moves:
+                if king.position == move:
+                    selected_piece.update_position(current_pos)
+                    return True
+        selected_piece.update_position(current_pos)
+        return False
+
+
+    def check_check_mate(self,enemy_player,  new_pos):
+
+        """
+        a function that implemented if the king is in cheak. it cheack for a move if he  lead to cheackmate (the king is under_attack even after he moves
+        and can be captured by the enemy next turn) if all themoves leads to cheack mate, the player lose (in checkmate).
+        :param enemy_player: a player object of the  rival player
+        :param new_pos: the new position that the king is move to.
+        :return: true if the king is under attack when he moved to the new position or not.
+        """
+
+        king = self.get_pieces_by_type("King")[0]
+        current_pos = king.position
+        king.update_position(new_pos)
+        for piece in enemy_player.pieces:
+            if king.position == piece.position:
+                current_piece = piece
+                enemy_player.remove_piece(piece)
+                for tool in enemy_player.pieces:
+                    tool.update_valid_moves()
+                for tool in enemy_player.pieces:
+                    for move in tool.get_all_valid_moves():
+                        if king.position == move:
+                            king.update_position(current_pos)
+                            enemy_player.add_piece(current_piece)
+                            return True
+                king.update_position(current_pos)
+                enemy_player.add_piece(current_piece)
+                return False
+
+            else:
+                for move in piece.get_all_valid_moves():
+                    if king.position == move:
+                        king.update_position(current_pos)
+                        return True
+        king.update_position(current_pos)
+        return False
+
+    def check_mate(self, enemy_player):
+        """
+
+        :param enemy_player: a player object of the rival player.
+        :return: return true if the player is  in cheack_mate, and False if he isn't.
+        """
+        if not self.check:
+            return False
+        king = self.get_pieces_by_type("King")[0]
+        king.update_valid_moves(self, enemy_player)
+        for move in king.valid_moves[0]:
+            if not self.check_check_mate(self, enemy_player, king.position, move):
+                return False
+        return True
+
+    def draw_pieces(self,screen):
         for piece in self.pieces:
-            piece.draw()
+            piece.draw(screen)
     def draw_captured_pieces(self,screen):
         if self.color == 'white':
             offset = 825
@@ -62,10 +165,15 @@ class Player():
         for i in range(len(self.capture_pieces)):
             captured_piece = self.capture_pieces[i]
             screen.blit(captured_piece.capture_drawing(), (offset, 5 + 50 * i))
-
+    def add_piece(self,piece): # a  functionfor testing the class and other functions
+        self.pieces.append(piece)
+    def add_captured_piece(self,piece):
+        self.capture_pieces.append(piece)
+    def remove_piece(self, piece):
+        self.pieces.remove(piece)
     def initialize_player(self):
         # Paths to images
-        if self.color=='white':
+        if self.color == 'white':
             image_paths = {
                 'King': 'assets/images/white king.png',
                 'Queen': 'assets/images/white queen.png',

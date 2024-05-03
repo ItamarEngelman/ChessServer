@@ -10,6 +10,7 @@ class Pawn(Piece):
     פעולה המייצגת אוביקטים מסוג פון. יורשת , כמו שאר החתיכות, ממחלקת חתיכה. מקבל את מיקום התמונה, את מיקום החייל והאם הפון זז או לא. הסוג הופך אוטומטית לסוג של פון. כמו כן , מקבל את הצבע של הפון
 
     """
+    color_promotion = ''
     def __init__(self, image_path, position, color):
         """A function to initialize a pawn piece
 
@@ -52,17 +53,22 @@ class Pawn(Piece):
         else:
             offset = -1
         if (self.position[0], self.position[1] + offset) not in my_player.get_all_positions() and \
-                (self.position[0], self.position[1] + 1) not in enemy_player.get_all_positions():
-            moves_list.append((self.position[0], self.position[1] + 1))
+                (self.position[0], self.position[1] + offset) not in enemy_player.get_all_positions() and not my_player.check_check(enemy_player, self.position,
+                                                                                                                 (self.position[0], self.position[1] + offset)):
+            moves_list.append((self.position[0], self.position[1] + offset))
             # indent the check for two spaces ahead, so it is only checked if one space ahead is also open
-            if (self.position[0], self.position[1] + 2 * offset ) not in my_player.get_all_positions() and \
+            if (self.position[0], self.position[1] + 2 * offset) not in my_player.get_all_positions() and \
             (self.position[0], self.position[1] + 2 * offset) not in enemy_player.get_all_positions()\
-            and self.moved is False:
+            and self.moved is False and not my_player.check_check(enemy_player, self.position, (self.position[0], self.position[1] + 2 * offset)):
                 moves_list.append((self.position[0], self.position[1] + 2 * offset))
-        if (self.position[0] + 1, self.position[1] + offset) in enemy_player.get_all_positions():
+
+        if (self.position[0] + 1, self.position[1] + offset) in enemy_player.get_all_positions()\
+            and not my_player.check_check(enemy_player, self.position, (self.position[0] + 1, self.position[1] + offset)):
             moves_list.append((self.position[0] + 1, self.position[1] + offset))
-        if (self.position[0] - 1, self.position[1] + offset) in enemy_player.get_all_positions():
+        if (self.position[0] - 1, self.position[1] + offset) in enemy_player.get_all_positions() \
+           and not my_player.check_check(enemy_player, self.position, (self.position[0] - 1, self.position[1] + offset)):
             moves_list.append((self.position[0] - 1, self.position[1] + offset))
+        moves_list = eliminate_off_board(moves_list)
         self.valid_moves = (moves_list, ep_moves_list)
         # add en passant move checker
     def check_ep(self, enemy_player):
@@ -74,12 +80,16 @@ class Pawn(Piece):
         """
         ep_moves_list = []
         if self.color == 'white':
-            offset = 4
+            position_offset, new_position_offset = 4, 1  #the first offset is to check if the pawn is in the right line,
+                                                        # the seacend offset is to check where the pawn moved afte the ep , down(+1, white) or up(-1, black) the board
         else:
-            offset = 3
+            position_offset, new_position_offset = 3, -1
         for piece in enemy_player.pieces:  # ask ariel i do i confirm that the piece is removed
-            if piece.type == "Pawn" and piece.position[1] == offset and piece.since_moved == 0:
-                ep_moves_list.append(piece)
+            if piece.type == "Pawn" and piece.position[1] == position_offset and piece.since_moved == 0 \
+                    and abs(self.position[0] - piece.position[0]) == 1 and self.position[1] - piece.position[1] == 0:
+                print(str((piece.position[0], piece.position[1] + new_position_offset)))
+                ep_moves_list.append((piece.position[0], piece.position[1] + new_position_offset))
+        ep_moves_list = eliminate_off_board(ep_moves_list)
         return ep_moves_list
     def check_promotion(self):
         """
@@ -91,6 +101,7 @@ class Pawn(Piece):
         else:
             offset = 0
         if self.position[1] == offset:
+            Pawn.color_promotion = self.color
             return True
         return False
     def promotion(self, new_type):
@@ -100,6 +111,7 @@ class Pawn(Piece):
                 :return: an object of the type chosen. the object obtain the same Characteristics except the image and the type. the valid_moves doesn't change
                 it only changed after update_valid_moves. if the new_type is diffrent than known ones - print that error occur and return None
                 """
+        Pawn.color_promotion = self.color
         if new_type == "Queen":
             return Queen(image_path_white_queen, self.position, self.color)
         if new_type == "Rook":

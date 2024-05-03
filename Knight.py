@@ -31,7 +31,7 @@ class Knight(Piece):
         targets = [(1, 2), (1, -2), (2, 1), (2, -1), (-1, 2), (-1, -2), (-2, 1), (-2, -1)]
         for i in range(8):
             target = (self.position[0] + targets[i][0], self.position[1] + targets[i][1])
-            if target not in my_player.get_all_positions():
+            if target not in my_player.get_all_positions() and not my_player.check_check(enemy_player, self.position, target):
                 moves_list.append(target)
         moves_list = eliminate_off_board(moves_list)
         self.valid_moves = moves_list

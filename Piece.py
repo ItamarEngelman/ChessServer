@@ -28,7 +28,6 @@ class Piece():
         :return: blit (draws) the image into the screen
         """
         image = pygame.image.load(self.image_path)
-        print(image)
         image = pygame.transform.scale(image, (65, 65))
         screen.blit(image, (self.position[0] * 100 + 10, self.position[1] * 100 + 10))
 

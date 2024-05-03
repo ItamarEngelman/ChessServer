@@ -105,3 +105,5 @@ image_path_black_rook = 'assets/images/black rook.png'
 image_path_black_bishop = 'assets/images/black bishop.png'
 image_path_black_knight = 'assets/images/black knight.png'
 image_path_black_pawn = 'assets/images/black pawn.png'
+
+dict_of_promotions = {"Bishop": (8, 0), "Knight": (8, 1), "Rook": (8, 2), "Queen": (8, 3)}
