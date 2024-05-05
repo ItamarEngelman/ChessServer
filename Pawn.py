@@ -41,35 +41,46 @@ class Pawn(Piece):
 
     def update_valid_moves(self, my_player, enemy_player):
         """
+        Update the valid_moves characteristic.
 
-        :param my_player: player object which represent the player who owns the pawn and playing the current turn
-        :param enemy_player:  represnt the player object who is againts us
-        :return: update the valis_moves chrcristic - the first (in the  tuple) represnt the regular moves while the seacned represent the en_passon one. both lists full of tupples
+        :param my_player: Player object representing the current player.
+        :param enemy_player: Player object representing the opposing player.
+        :return: Updated valid_moves characteristic.
         """
         moves_list = []
         ep_moves_list = self.check_ep(enemy_player)
+
         if self.color == 'white':
             offset = 1
         else:
             offset = -1
+
         if (self.position[0], self.position[1] + offset) not in my_player.get_all_positions() and \
-                (self.position[0], self.position[1] + offset) not in enemy_player.get_all_positions() and not my_player.check_check(enemy_player, self.position,
-                                                                                                                 (self.position[0], self.position[1] + offset)):
+                (self.position[0], self.position[1] + offset) not in enemy_player.get_all_positions() and \
+                not my_player.check_check(enemy_player, self.position, (self.position[0], self.position[1] + offset)):
             moves_list.append((self.position[0], self.position[1] + offset))
-            # indent the check for two spaces ahead, so it is only checked if one space ahead is also open
+
+            # Indent the check for two spaces ahead, so it is only checked if one space ahead is also open
             if (self.position[0], self.position[1] + 2 * offset) not in my_player.get_all_positions() and \
-            (self.position[0], self.position[1] + 2 * offset) not in enemy_player.get_all_positions()\
-            and self.moved is False and not my_player.check_check(enemy_player, self.position, (self.position[0], self.position[1] + 2 * offset)):
+                    (self.position[0], self.position[1] + 2 * offset) not in enemy_player.get_all_positions() \
+                    and self.moved is False and \
+                    not my_player.check_check(enemy_player, self.position,
+                                              (self.position[0], self.position[1] + 2 * offset)):
                 moves_list.append((self.position[0], self.position[1] + 2 * offset))
 
-        if (self.position[0] + 1, self.position[1] + offset) in enemy_player.get_all_positions()\
-            and not my_player.check_check(enemy_player, self.position, (self.position[0] + 1, self.position[1] + offset)):
+        if (self.position[0] + 1, self.position[1] + offset) in enemy_player.get_all_positions() \
+                and not my_player.check_check(enemy_player, self.position,
+                                              (self.position[0] + 1, self.position[1] + offset)):
             moves_list.append((self.position[0] + 1, self.position[1] + offset))
+
         if (self.position[0] - 1, self.position[1] + offset) in enemy_player.get_all_positions() \
-           and not my_player.check_check(enemy_player, self.position, (self.position[0] - 1, self.position[1] + offset)):
+                and not my_player.check_check(enemy_player, self.position,
+                                              (self.position[0] - 1, self.position[1] + offset)):
             moves_list.append((self.position[0] - 1, self.position[1] + offset))
+
         moves_list = eliminate_off_board(moves_list)
         self.valid_moves = (moves_list, ep_moves_list)
+
         # add en passant move checker
     def check_ep(self, enemy_player):
         """

@@ -20,17 +20,12 @@ class King(Piece):
         targets = [(1, 0), (1, 1), (1, -1), (-1, 0), (-1, 1), (-1, -1), (0, 1), (0, -1)]
         for i in range(8):
             pos_checked = (self.position[0] + targets[i][0], self.position[1] + targets[i][1])
-            if pos_checked not in my_player.get_all_positions() and not insdie_lst_of_lists(pos_checked, enemy_player.get_all_valid_moves()):
+            if pos_checked not in my_player.get_all_positions() \
+                and not insdie_lst_of_lists(pos_checked, enemy_player.get_all_valid_moves()):
                 regular_moves.append(pos_checked)
         regular_moves = eliminate_off_board(regular_moves)
         self.valid_moves = (regular_moves, castle_moves) # איבר ראשון שמחזיר הוא המהלכים הרגילים, האיבר שני זה מהלכי הצרחה פוטנציאלים.
 
-        """
-
-        :param my_player: player object which represent the player who owns the king and playing the current turn
-        :param enemy_player:  player object which represent the other player
-        :return: all the possible castling moves
-        """
 
     def check_castling(self, my_player, enemy_player):
         """

@@ -23,12 +23,10 @@ class Game:
     def draw_all_captured_pieces(self):
         self.white_player.draw_captured_pieces(self.screen)
         self.black_player.draw_captured_pieces(self.screen)
-    def draw_board(self, this_turn_color):
-        """
 
-        :param this_turn_color: a parameter who repessnt whatisthe color of the current turn.
-        used to write on the board which turn is playing
-        :return: the function that draw to the screen the bard,using gemotry.
+    def draw_board(self):
+        """
+        Draw the chessboard on the screen without the bottom line indicating the turn.
         """
         for i in range(32):
             column = i % 4
@@ -37,22 +35,17 @@ class Game:
                 pygame.draw.rect(self.screen, 'light gray', [600 - (column * 200), row * 100, 100, 100])
             else:
                 pygame.draw.rect(self.screen, 'light gray', [700 - (column * 200), row * 100, 100, 100])
-            pygame.draw.rect(self.screen, 'gray', [0, 800, WIDTH, 100])
-            pygame.draw.rect(self.screen, 'gold', [0, 800, WIDTH, 100], 5)
-            pygame.draw.rect(self.screen, 'gold', [800, 0, 200, HEIGHT], 5)
-            status_text = ['White Turn', 'Black Turn']
-            if this_turn_color == 'white':
-                self.screen.blit(big_font.render(status_text[0], True, 'black'), (20, 820))
-            else:
-                self.screen.blit(big_font.render(status_text[1], True, 'black'), (20, 820))
-            for i in range(9):
-                pygame.draw.line(self.screen, 'black', (0, 100 * i), (800, 100 * i), 2)
-                pygame.draw.line(self.screen, 'black', (100 * i, 0), (100 * i, 800), 2)
-            self.screen.blit(medium_font.render('FORFEIT', True, 'black'), (810, 830))
-            if Pawn.color_promotion:
-                pygame.draw.rect(self.screen, 'gray', [0, 800, WIDTH - 200, 100])
-                pygame.draw.rect(self.screen, 'gold', [0, 800, WIDTH - 200, 100], 5)
-                self.screen.blit(big_font.render('Select Piece to Promote Pawn', True, 'black'), (20, 820))
+
+        pygame.draw.rect(self.screen, 'gray', [800, HEIGHT - 100, WIDTH - 800, 100])  # Bottom area for forfeit
+        pygame.draw.rect(self.screen, 'black', [800, HEIGHT - 100, WIDTH - 800, 100],
+                         5)  # Thicker black border for forfeit area
+
+        # Draw a line between capture pieces area and the board
+        pygame.draw.rect(self.screen, 'black', [800, HEIGHT - 102, WIDTH - 800, 4])  # Adjusted thickness and position
+
+        # Adjusted position for "FORFEIT" text
+        self.screen.blit(medium_font.render('FORFEIT', True, 'black'), (810, HEIGHT - 90))
+
     def draw_valid_moves(self, piece):
         """
 
@@ -87,13 +80,17 @@ class Game:
         :return: draw a circle around the king squre. red- if white,and blue if black
         """
         if this_turn_color == 'white' and self.white_player.check:
-            king = self.white_player.get_pieces_by_type("King")[0]
-            pygame.draw.rect(self.screen, 'dark red', [king.position[0] * 100 + 1,
-                                                            king.position[1] * 100 + 1, 100, 100], 5)
+            kings = self.white_player.get_pieces_by_type("King")
+            if kings:
+                king = kings[0]
+                pygame.draw.rect(self.screen, 'dark red', [king.position[0] * 100 + 1,
+                                                                king.position[1] * 100 + 1, 100, 100], 5)
         elif this_turn_color == 'black' and self.black_player.check:
-            king = self.black_player.get_pieces_by_type("King")[0]
-            pygame.draw.rect(self.screen, 'dark blue', [king.position[0] * 100 + 1,
-                                                        king.position[1] * 100 + 1, 100, 100], 5)
+            kings = self.white_player.get_pieces_by_type("King")
+            if kings:
+                king = kings[0]
+                pygame.draw.rect(self.screen, 'dark blue', [king.position[0] * 100 + 1,
+                                                            king.position[1] * 100 + 1, 100, 100], 5)
 
     def draw_game_over(self):
         """
@@ -105,27 +102,22 @@ class Game:
         screen.blit(font.render(f'{self.winner} won the game!', True, 'white'), (210, 210))
         screen.blit(font.render(f'Press ENTER to Restart!', True, 'white'), (210, 240))
 
-    def draw_promotion(self):
+    def draw_promotion(self, piece_images, piece_positions, color_options=('white', 'black')):
         """
-
-        :return: draw the promotion options of  the player premoting. using lists from the constans file
+        :param piece_images: list of images for promotion pieces
+        :param piece_positions: positions to blit promotion pieces onto the screen
+        :param color_options: color options for promotion pieces
+        :return: draws the promotion options on the screen
         """
         color = 'green'  # Default color, change it to something that makes sense in your context
         pygame.draw.rect(self.screen, 'dark gray', [800, 0, 200, 420])
 
-        if Pawn.color_promotion == 'white':
-            color = 'white'
-            for i in range(len(white_promotions)):
-                piece = white_promotions[i]
-                index = piece_list.index(piece)
-                screen.blit(white_images[index], (860, 5 + 100 * i))
-        elif Pawn.color_promotion == 'black':
-            color = 'black'
-            for i in range(len(black_promotions)):
-                piece = black_promotions[i]
-                index = piece_list.index(piece)
-                screen.blit(black_images[index], (860, 5 + 100 * i))
+        if Pawn.color_promotion in color_options:
+            color = Pawn.color_promotion
+            for i in range(len(piece_images)):
+                screen.blit(piece_images[i], piece_positions[i])
         pygame.draw.rect(screen, color, [800, 0, 200, 420], 8)
+
     def check_promo_select(self, mouse_cords):
         """
 
@@ -140,7 +132,7 @@ class Game:
         elif Pawn.color_promotion == 'black' and left_click and x_pos > 7 and y_pos < 4:
             return black_promotions[y_pos]
     def draw_turn(self,this_turn_color): # לקחתי את פעולות הציור מתוך הפונקציה - ישתמש בהם על מנת לצייר
-        self.draw_board(this_turn_color)
+        self.draw_board()
         self.draw_all_pieces()
         self.draw_all_captured_pieces()
         self.draw_check(this_turn_color)
@@ -187,6 +179,9 @@ class Game:
             # will be use to promote and not to make other moves
             self.execute_promotion(click_coords, this_turn_player)
         else:
+            if click_coords == other_turn_player.get_pieces_by_type("King")[0].position == 'king':
+                self.winner = self.this_turn_color
+                self.game_over = True
             if click_coords in this_turn_player.get_all_positions():
                 self.chose_piece(click_coords, this_turn_player, other_turn_player)
             elif not self.this_turn_selected_piece.type == 'Pawn' and not self.this_turn_selected_piece.type == 'King' and not self.move_taken:
@@ -208,12 +203,9 @@ class Game:
                 self.move_taken = False
     def execute_castling(self, click_coords, this_turn_player):
         if self.this_turn_selected_piece.type == "King" and not self.move_taken:
-            print(f"identifing piece type as king ")
             for move in self.this_turn_selected_piece.valid_moves[1]:
                 # Check if the clicked coordinates match the move's start position
-                print(f"cheacking castlling move : {move}")
                 if click_coords == move[0]:
-                    print(f"mach founded !, click_coords  = move[0]: {move[0]}")
                     # Update the selected piece's position
                     self.this_turn_selected_piece.update_position(move[0])
                     self.this_turn_selected_piece.update_moved()
@@ -240,7 +232,7 @@ class Game:
     def execute_en_passant(self, click_coords, this_turn_player, other_turn_player):
         if self.this_turn_selected_piece.type == "Pawn" and click_coords in self.this_turn_selected_piece.valid_moves[1] \
                 and not self.move_taken:
-            print(f"excute en_passon{click_coords}")
+            print(f"execute_en_passant {click_coords}")
             self.this_turn_selected_piece.update_position(click_coords)
             self.this_turn_selected_piece.update_moved()
             if this_turn_player.color == 'white':
@@ -264,23 +256,26 @@ class Game:
             if click_coords == position:
                 self.this_turn_chose, self.this_turn_selected_piece = True, this_turn_player.get_piece_by_position(position)
                 self.this_turn_selected_piece.update_valid_moves(this_turn_player, other_turn_player)
+
     def reset_game_state(self):
-        """
-        a function that reset  the game status as a  whole.  it goes over all the relevent paramters and inital all of
-        them to thier intiall status.
-        :return:
-        """
-        self.white_player = self.white_player.initialize_player()
-        self.black_player = self.black_player.initialize_player()
+        print("Resetting game state...")
+        self.white_player.initialize_player()
+        self.black_player.initialize_player()
+        print("Players reset to initial configuration.")
+
         self.turn_count = 0
         self.this_turn_chose = False
         self.this_turn_selected_piece = None
         self.move_taken = False
+        print("Game counters and selections reset.")
+
         self.this_turn_color = self.colors[self.turn_count % 2]
         self.other_turn_color = self.colors[(self.turn_count + 1) % 2]
+        print(f"Turn colors set to {self.this_turn_color} for this turn, {self.other_turn_color} for next turn.")
+
         self.game_over = False
         self.winner = None
-
+        print("Game status cleared. Game is active with no winner.")
 
     def reset_turn(self, this_turn_player, other_turn_player):
         """
@@ -301,8 +296,9 @@ class Game:
             if pawn != self.this_turn_selected_piece:
                 pawn.update_since_moved()
         self.this_turn_selected_piece = None
-
-
+    def draw_stale_mate(self):
+        pygame.draw.rect(self.screen, 'black', [200, 200, 400, 70])
+        screen.blit(font.render(f'{self.this_turn_color} in stale_mate, it is a tie', True, 'white'), (210, 210))
     def run_game(self):
         run = True
         print("Game started")
@@ -310,46 +306,50 @@ class Game:
             timer.tick(fps)  # Controlling the frame rate
             self.screen.fill('dark gray')  # Clearing the screen with a dark gray color
             self.draw_turn(self.this_turn_color)  # Drawing the current turn's game state
-            if Pawn.color_promotion == 'white' or Pawn.color_promotion == 'black':
-                self.draw_promotion()  # draw the promotion part on the screen
             if self.this_turn_selected_piece:
                 self.draw_valid_moves(self.this_turn_selected_piece)
-            # Listen for events (like clicks and keyboard inputs)
+            if Pawn.color_promotion == 'white' or Pawn.color_promotion == 'black':
+                self.draw_promotion()  # draw the promotion part on the screen
+
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:  # If the close button is clicked
+                if event.type == pygame.QUIT:
                     run = False
                     print("Quit event detected, closing game")
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not self.game_over:
                     x_coord, y_coord = event.pos[0] // 100, event.pos[1] // 100
                     click_coords = (x_coord, y_coord)
-                    # Check for a forfeit condition based on specific click coordinates
                     if click_coords == (8, 8) or click_coords == (9, 8):
                         self.winner = self.other_turn_color
                         self.game_over = True
                         print(f"Game over by forfeit. Winner: {self.winner}")
 
-                    # Assign players based on the current turn's color
                     if self.this_turn_color == 'white':
                         this_turn_player = self.white_player
                         other_turn_player = self.black_player
                     else:
                         this_turn_player = self.black_player
                         other_turn_player = self.white_player
-                    this_turn_player.update_check(other_turn_player)  # updating the check function of the this turn player
-                    print(f"this_turn_player in check :{this_turn_player.check}")
-                    # Choose a piece or execute a move based on whether a piece is already chosen
+                    this_turn_player.update_check(
+                        other_turn_player)  # updating the check function of the this turn player
+                    stale_mate = this_turn_player.check_stale_mate()
+                    if stale_mate:
+                        self.draw_stale_mate()
+                        self.game_over = True
+                        if this_turn_player.check:
+                            if this_turn_player.check_mate(other_turn_player):
+                                self.game_over = True
+                                self.winner = other_turn_player.color
+                                break
                     if not self.this_turn_chose:
                         self.chose_piece(click_coords, this_turn_player, other_turn_player)
-                        print(f"Piece chosen at {click_coords}")
-
                     else:
                         self.execute_move(click_coords, this_turn_player, other_turn_player)
                         if self.move_taken:
                             self.reset_turn(this_turn_player, other_turn_player)
-                            print("Turn reset after move")
 
                 if event.type == pygame.KEYDOWN and self.game_over:
                     self.reset_game_state()
+                    self.draw_turn(self.this_turn_color)
                     print("Game state reset after game over")
 
             # Check if there is a winner and handle game over

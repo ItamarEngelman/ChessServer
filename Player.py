@@ -5,7 +5,7 @@ from Rook import Rook
 from Bishop import Bishop
 from Knight import Knight
 from Pawn import Pawn
-
+from utils import *
 class Player():
     def __init__(self, color, pieces, capture_pieces):
         self.color = color
@@ -62,109 +62,150 @@ class Player():
         :return: doesn't return anything but updates the check parameter if the king is being under attack.
         """
         king = self.get_pieces_by_type("King")[0]
-        print(f"Debug: Checking if the king at position {king.position} is in check.")
+        check = False  # Use the existing state directly if that's intended
+        if self.check:
+            print("king in in check !")
+        if not check:  # Only process if we don't already know king is in check
+            for piece_valid_moves in enemy_player.get_all_valid_moves():
+                for move in piece_valid_moves:
+                    if king.position == move:
+                        check = True
+                        break  # Breaks out of the inner loop only
+                if check:
+                    break  # Breaks out of the outer loop if king is in check
+        self.check = check
 
-        # Iterate over all valid moves of all pieces from the enemy player.
-        for piece_valid_moves in enemy_player.get_all_valid_moves():
-            for move in piece_valid_moves:
-                # Print the move being checked against the king's position
-                print(f"Debug: Checking enemy move {move} against king's position {king.position}.")
-                if king.position == move:
-                    # If a match is found, set check to True and break out of the loop
-                    self.check = True
-                    print(f"Debug: King is in check from move {move}.")
-                    break
-            # Break outer loop if check is found
-            if self.check:
-                break
-        # Final status of check
-        print(f"Debug: King check status is {self.check}.")
-
-    def check_check(self, enemy_player, current_pos, new_pos):
+    def check_check(self, enemy_player, current_pos, new_pos):  # work except the queen that frize when in check
         """
-        a function that check for a move of a piece if after the move is implemended the king is in check
-        :param enemy_player: a player object which represent the enemy player
-        :param current_pos: the current pos of the piece being checked. with that pos we can find  the piece and after our checkinh, we will update the
-        position of the piece again to the  current_pos
-        :param new_pos: the new position caused by the  move that we check
-        :return:  true if the king is in check after the move anf False if he isn't.
+        A function that checks if after a move is implemented, the king is in check.
+
+        :param enemy_player: A player object representing the enemy player.
+        :param current_pos: The current position of the piece being checked.
+        :param new_pos: The new position caused by the move being checked.
+        :return: True if the king is in check after the move, False otherwise.
         """
         selected_piece = self.get_piece_by_position(current_pos)
-        king = self.get_pieces_by_type("King")[0]
+        king_pos = self.get_pieces_by_type("King")[0].position
         selected_piece.update_position(new_pos)
-
-        for piece_valid_moves in enemy_player.get_all_valid_moves():
-            for move in piece_valid_moves:
-                if king.position == move:
-                    selected_piece.update_position(current_pos)
-                    return True
-        selected_piece.update_position(current_pos)
-        return False
-
-
-    def check_check_mate(self,enemy_player,  new_pos):
-
-        """
-        a function that implemented if the king is in cheak. it cheack for a move if he  lead to cheackmate (the king is under_attack even after he moves
-        and can be captured by the enemy next turn) if all themoves leads to cheack mate, the player lose (in checkmate).
-        :param enemy_player: a player object of the  rival player
-        :param new_pos: the new position that the king is move to.
-        :return: true if the king is under attack when he moved to the new position or not.
-        """
-
-        king = self.get_pieces_by_type("King")[0]
-        current_pos = king.position
-        king.update_position(new_pos)
-        for piece in enemy_player.pieces:
-            if king.position == piece.position:
-                current_piece = piece
-                enemy_player.remove_piece(piece)
-                for tool in enemy_player.pieces:
-                    tool.update_valid_moves()
-                for tool in enemy_player.pieces:
-                    for move in tool.get_all_valid_moves():
-                        if king.position == move:
-                            king.update_position(current_pos)
-                            enemy_player.add_piece(current_piece)
+        my_player_positions = self.get_all_positions()
+        enemy_player_positions = enemy_player.get_all_positions()
+        captured_piece = None
+        if selected_piece.position in enemy_player_positions:
+            captured_piece = enemy_player.get_piece_by_position(selected_piece.position)
+            enemy_player.remove_piece(captured_piece)
+        dict_pieces = {"Rook": [(1, 0), (-1, 0), (0, 1), (0, -1)], "Bishop": [(1, 1), (1, -1), (-1, 1), (-1, -1)]}
+        for piece, directions in dict_pieces.items():
+            for direction in directions:
+                for i in range(1,8):
+                    pos_checked = (king_pos[0] + direction[0] * i, king_pos[1] + direction[1] * i)
+                    if pos_checked in my_player_positions or not InBoard(pos_checked):
+                        break
+                    elif pos_checked in enemy_player_positions:
+                        attack_piece = enemy_player.get_piece_by_position(pos_checked)
+                        if attack_piece.type == piece or attack_piece.type == "Queen":
+                            selected_piece.update_position(current_pos)
+                            if captured_piece:
+                                enemy_player.add_piece(captured_piece)
                             return True
-                king.update_position(current_pos)
-                enemy_player.add_piece(current_piece)
-                return False
-
-            else:
-                for move in piece.get_all_valid_moves():
-                    if king.position == move:
-                        king.update_position(current_pos)
+        if self.color == 'white':
+            attack_pawn_positions = [(king_pos[0] + 1, king_pos[1] + 1), (king_pos[0] - 1, king_pos[1] + 1)]
+        else:
+            attack_pawn_positions = [(king_pos[0] + 1, king_pos[1] - 1), (king_pos[0] - 1, king_pos[1] - 1)]
+        enemy_pawns = enemy_player.get_pieces_by_type("Pawn")
+        if enemy_pawns:
+            for pawn in enemy_pawns:
+                if pawn.position in attack_pawn_positions:
+                    selected_piece.update_position(current_pos)
+                    if captured_piece:
+                        enemy_player.add_piece(captured_piece)
+                    return True
+        attack_knight_positions = [(1, 2), (1, -2), (2, 1), (2, -1), (-1, 2), (-1, -2), (-2, 1), (-2, -1)]
+        enemy_knights = enemy_player.get_pieces_by_type("Knight")
+        if enemy_knights:
+            for knight in enemy_knights:
+                for pos in attack_knight_positions:
+                    pos_checked = (king_pos[0] + pos[0], king_pos[1] + pos[1])
+                    if pos_checked == knight.position:
+                        if captured_piece:
+                            enemy_player.add_piece(captured_piece)
+                        selected_piece.update_position(current_pos)
                         return True
-        king.update_position(current_pos)
+        if captured_piece:
+            enemy_player.add_piece(captured_piece)
+        selected_piece.update_position(current_pos)
         return False
 
     def check_mate(self, enemy_player):
         """
+        Check if the player is in checkmate.
 
-        :param enemy_player: a player object of the rival player.
-        :return: return true if the player is  in cheack_mate, and False if he isn't.
+        :param enemy_player: A player object of the rival player.
+        :return: True if the player is in checkmate, False if they aren't.
         """
+        print("Checking for checkmate...")
+
         if not self.check:
+            print("Not in check.")
             return False
+
         king = self.get_pieces_by_type("King")[0]
         king.update_valid_moves(self, enemy_player)
         for move in king.valid_moves[0]:
-            if not self.check_check_mate(self, enemy_player, king.position, move):
+            print(f"Checking king move to {move}")
+            if not self.check_check(enemy_player, king.position, move):
+                print("King can escape check.")
                 return False
+
+        for piece in self.pieces:
+            if piece.valid_moves:  # Ensure valid_moves is not empty
+                print(f"Checking piece {piece.type} at {piece.position}")
+                for piece_valid_move in piece.valid_moves[0]:
+                    print(f"Checking piece move to {piece_valid_move}")
+                    if not self.check_check(enemy_player, piece.position, piece_valid_move):
+                        print("Piece can block or capture.")
+                        return False
+
+        print("No escape moves found. Checkmate!")
         return True
 
-    def draw_pieces(self,screen):
+    def check_stale_mate(self):
+        print("Checking for stalemate...")
+
+        # Ensure the king is not in check
+        if self.check:
+            print("King is in check, not a stalemate.")
+            return False
+
+        # Get all valid moves for all pieces
+        all_valid_moves = self.get_all_valid_moves()
+
+        # Check if there are no valid moves for any piece
+        if not any(all_valid_moves):
+            print("No valid moves available, stalemate.")
+            return True
+
+        print("Valid moves available, not a stalemate.")
+        return False
+
+    def eliminate_all_pieces(self):
+        for piece in self.pieces:
+            if piece.type != "King":
+                self.remove_piece(piece)
+
+    def draw_pieces(self, screen):
         for piece in self.pieces:
             piece.draw(screen)
-    def draw_captured_pieces(self,screen):
+
+    def draw_captured_pieces(self, screen):
         if self.color == 'white':
-            offset = 825
+            offset = 800  # Adjusted offset
         else:
-            offset = 925
+            offset = 900  # Adjusted offset
         for i in range(len(self.capture_pieces)):
             captured_piece = self.capture_pieces[i]
-            screen.blit(captured_piece.capture_drawing(), (offset, 5 + 50 * i))
+            image = captured_piece.capture_drawing()  # Adjusted captured piece size
+            screen.blit(image, (offset, 5 + 40 * i))  # Adjusted position
+
     def add_piece(self,piece): # a  functionfor testing the class and other functions
         self.pieces.append(piece)
     def add_captured_piece(self,piece):
@@ -234,3 +275,39 @@ class Player():
 
 
 
+    # def check_check_mate(self,enemy_player,  new_pos):
+    #
+    #     """
+    #     a function that implemented if the king is in cheak. it cheack for a move if he  lead to cheackmate (the king is under_attack even after he moves
+    #     and can be captured by the enemy next turn) if all themoves leads to cheack mate, the player lose (in checkmate).
+    #     :param enemy_player: a player object of the  rival player
+    #     :param new_pos: the new position that the king is move to.
+    #     :return: true if the king is under attack when he moved to the new position or not.
+    #     """
+    #
+    #     king = self.get_pieces_by_type("King")[0]
+    #     current_pos = king.position
+    #     king.update_position(new_pos)
+    #     for piece in enemy_player.pieces:
+    #         if king.position == piece.position:
+    #             current_piece = piece
+    #             enemy_player.remove_piece(piece)
+    #             for tool in enemy_player.pieces:
+    #                 tool.update_valid_moves()
+    #             for tool in enemy_player.pieces:
+    #                 for move in tool.get_all_valid_moves():
+    #                     if king.position == move:
+    #                         king.update_position(current_pos)
+    #                         enemy_player.add_piece(current_piece)
+    #                         return True
+    #             king.update_position(current_pos)
+    #             enemy_player.add_piece(current_piece)
+    #             return False
+    #
+    #         else:
+    #             for move in piece.get_all_valid_moves():
+    #                 if king.position == move:
+    #                     king.update_position(current_pos)
+    #                     return True
+    #     king.update_position(current_pos)
+    #     return False
