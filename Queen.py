@@ -31,18 +31,17 @@ class Queen(Piece):
                 x = -1
                 y = 0
             while path:
-                pos_checked = (self.position[0] + (chain * x), self.position[1] + (chain * y))
-                if not InBoard(pos_checked) or pos_checked in my_player.get_all_positions():
+                position_checked = (self.position[0] + (chain * x), self.position[1] + (chain * y))
+                if not InBoard(position_checked):
                     path = False
-                else:
-                    if not my_player.check_check(enemy_player, self.position, pos_checked):
-                        moves_list.append(pos_checked)
-                        if pos_checked in enemy_player.get_all_positions():
-                            path = False
-                        chain += 1
-                    else:
+                elif position_checked not in my_player.get_all_positions():
+                    if not my_player.check_check(enemy_player, self.position, position_checked):
+                        moves_list.append(position_checked)
+                    if position_checked in enemy_player.get_all_positions():
                         path = False
-
+                    chain += 1
+                else:
+                    path = False
         for i in range(4):  # up-right, up-left, down-right, down-left
             path = True
             chain = 1
@@ -59,17 +58,17 @@ class Queen(Piece):
                 x = -1
                 y = 1
             while path:
-                pos_checked = (self.position[0] + (chain * x), self.position[1] + (chain * y))
-                if not InBoard(pos_checked) or pos_checked in my_player.get_all_positions():
+                position_checked = (self.position[0] + (chain * x), self.position[1] + (chain * y))
+                if not InBoard(position_checked):
                     path = False
-                else:
-                    if not my_player.check_check(enemy_player, self.position, pos_checked):
-                        moves_list.append(pos_checked)
-                        if pos_checked in enemy_player.get_all_positions():
-                            path = False
-                        chain += 1
-                    else:
+                elif position_checked not in my_player.get_all_positions():
+                    if not my_player.check_check(enemy_player, self.position, position_checked):
+                        moves_list.append(position_checked)
+                    if position_checked in enemy_player.get_all_positions():
                         path = False
+                    chain += 1
+                else:
+                    path = False
 
         moves_list = eliminate_off_board(moves_list)
         self.valid_moves = moves_list

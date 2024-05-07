@@ -75,28 +75,19 @@ class Player():
                     break  # Breaks out of the outer loop if king is in check
         self.check = check
 
-    def check_check(self, enemy_player, current_pos, new_pos):  # work except the queen that frize when in check
-        """
-        A function that checks if after a move is implemented, the king is in check.
-
-        :param enemy_player: A player object representing the enemy player.
-        :param current_pos: The current position of the piece being checked.
-        :param new_pos: The new position caused by the move being checked.
-        :return: True if the king is in check after the move, False otherwise.
-        """
+    def check_check(self, enemy_player, current_pos, new_pos):
         selected_piece = self.get_piece_by_position(current_pos)
         king_pos = self.get_pieces_by_type("King")[0].position
         selected_piece.update_position(new_pos)
         my_player_positions = self.get_all_positions()
         enemy_player_positions = enemy_player.get_all_positions()
         captured_piece = None
-        if selected_piece.position in enemy_player_positions:
-            captured_piece = enemy_player.get_piece_by_position(selected_piece.position)
-            enemy_player.remove_piece(captured_piece)
+
+        # Check for Rook and Bishop attacks
         dict_pieces = {"Rook": [(1, 0), (-1, 0), (0, 1), (0, -1)], "Bishop": [(1, 1), (1, -1), (-1, 1), (-1, -1)]}
         for piece, directions in dict_pieces.items():
             for direction in directions:
-                for i in range(1,8):
+                for i in range(1, 8):
                     pos_checked = (king_pos[0] + direction[0] * i, king_pos[1] + direction[1] * i)
                     if pos_checked in my_player_positions or not InBoard(pos_checked):
                         break
@@ -107,10 +98,13 @@ class Player():
                             if captured_piece:
                                 enemy_player.add_piece(captured_piece)
                             return True
+
+        # Check for Pawn attacks
         if self.color == 'white':
-            attack_pawn_positions = [(king_pos[0] + 1, king_pos[1] + 1), (king_pos[0] - 1, king_pos[1] + 1)]
+            offset = 1
         else:
-            attack_pawn_positions = [(king_pos[0] + 1, king_pos[1] - 1), (king_pos[0] - 1, king_pos[1] - 1)]
+            offset = -1
+        attack_pawn_positions = [(king_pos[0] + 1, king_pos[1] + offset), (king_pos[0] - 1, king_pos[1] + offset)]
         enemy_pawns = enemy_player.get_pieces_by_type("Pawn")
         if enemy_pawns:
             for pawn in enemy_pawns:
@@ -119,6 +113,8 @@ class Player():
                     if captured_piece:
                         enemy_player.add_piece(captured_piece)
                     return True
+
+        # Check for Knight attacks
         attack_knight_positions = [(1, 2), (1, -2), (2, 1), (2, -1), (-1, 2), (-1, -2), (-2, 1), (-2, -1)]
         enemy_knights = enemy_player.get_pieces_by_type("Knight")
         if enemy_knights:
@@ -130,6 +126,7 @@ class Player():
                             enemy_player.add_piece(captured_piece)
                         selected_piece.update_position(current_pos)
                         return True
+
         if captured_piece:
             enemy_player.add_piece(captured_piece)
         selected_piece.update_position(current_pos)
@@ -150,41 +147,34 @@ class Player():
 
         king = self.get_pieces_by_type("King")[0]
         king.update_valid_moves(self, enemy_player)
-        for move in king.valid_moves[0]:
-            print(f"Checking king move to {move}")
-            if not self.check_check(enemy_player, king.position, move):
-                print("King can escape check.")
-                return False
-
+        if king.valid_moves[0]:
+            return False
         for piece in self.pieces:
             if piece.valid_moves:  # Ensure valid_moves is not empty
                 print(f"Checking piece {piece.type} at {piece.position}")
-                for piece_valid_move in piece.valid_moves[0]:
-                    print(f"Checking piece move to {piece_valid_move}")
-                    if not self.check_check(enemy_player, piece.position, piece_valid_move):
-                        print("Piece can block or capture.")
-                        return False
+                if piece.type == "Pawn" or piece.type == "King":
+                    for piece_valid_move in piece.valid_moves[0]:
+                        print(f"Checking piece move to {piece_valid_move}")
+                        if not self.check_check(enemy_player, piece.position, piece_valid_move):
+                            print("Piece can block or capture.")
+                            return False
+                else:
+                    for piece_valid_move in piece.valid_moves:
+                        print(f"Checking piece move to {piece_valid_move}")
+                        if not self.check_check(enemy_player, piece.position, piece_valid_move):
+                            print("Piece can block or capture.")
+                            return False
 
         print("No escape moves found. Checkmate!")
         return True
 
+
     def check_stale_mate(self):
-        print("Checking for stalemate...")
-
-        # Ensure the king is not in check
         if self.check:
-            print("King is in check, not a stalemate.")
             return False
-
-        # Get all valid moves for all pieces
         all_valid_moves = self.get_all_valid_moves()
-
-        # Check if there are no valid moves for any piece
         if not any(all_valid_moves):
-            print("No valid moves available, stalemate.")
             return True
-
-        print("Valid moves available, not a stalemate.")
         return False
 
     def eliminate_all_pieces(self):

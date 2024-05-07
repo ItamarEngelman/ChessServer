@@ -102,20 +102,26 @@ class Game:
         screen.blit(font.render(f'{self.winner} won the game!', True, 'white'), (210, 210))
         screen.blit(font.render(f'Press ENTER to Restart!', True, 'white'), (210, 240))
 
-    def draw_promotion(self, piece_images, piece_positions, color_options=('white', 'black')):
+    def draw_promotion(self):
         """
-        :param piece_images: list of images for promotion pieces
-        :param piece_positions: positions to blit promotion pieces onto the screen
-        :param color_options: color options for promotion pieces
-        :return: draws the promotion options on the screen
+
+        :return: draw the promotion options of  the player premoting. using lists from the constans file
         """
         color = 'green'  # Default color, change it to something that makes sense in your context
         pygame.draw.rect(self.screen, 'dark gray', [800, 0, 200, 420])
 
-        if Pawn.color_promotion in color_options:
-            color = Pawn.color_promotion
-            for i in range(len(piece_images)):
-                screen.blit(piece_images[i], piece_positions[i])
+        if Pawn.color_promotion == 'white':
+            color = 'white'
+            for i in range(len(white_promotions)):
+                piece = white_promotions[i]
+                index = piece_list.index(piece)
+                screen.blit(white_images[index], (860, 5 + 100 * i))
+        elif Pawn.color_promotion == 'black':
+            color = 'black'
+            for i in range(len(black_promotions)):
+                piece = black_promotions[i]
+                index = piece_list.index(piece)
+                screen.blit(black_images[index], (860, 5 + 100 * i))
         pygame.draw.rect(screen, color, [800, 0, 200, 420], 8)
 
     def check_promo_select(self, mouse_cords):
@@ -310,7 +316,6 @@ class Game:
                 self.draw_valid_moves(self.this_turn_selected_piece)
             if Pawn.color_promotion == 'white' or Pawn.color_promotion == 'black':
                 self.draw_promotion()  # draw the promotion part on the screen
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
@@ -335,11 +340,11 @@ class Game:
                     if stale_mate:
                         self.draw_stale_mate()
                         self.game_over = True
-                        if this_turn_player.check:
-                            if this_turn_player.check_mate(other_turn_player):
-                                self.game_over = True
-                                self.winner = other_turn_player.color
-                                break
+                    if this_turn_player.check:
+                        if this_turn_player.check_mate(other_turn_player):
+                            self.game_over = True
+                            self.winner = other_turn_player.color
+                            break
                     if not self.this_turn_chose:
                         self.chose_piece(click_coords, this_turn_player, other_turn_player)
                     else:

@@ -32,14 +32,18 @@ class Rook(Piece):
                 y = 0
             while path:
                 position_checked = (self.position[0] + (chain * x), self.position[1] + (chain * y))
+                print(f"checking position :{position_checked}")
                 if not InBoard(position_checked):
                     path = False
-                elif position_checked not in my_player.get_all_positions() and not my_player.check_check(enemy_player, self.position, position_checked):
-                    moves_list.append(position_checked)
+                elif position_checked not in my_player.get_all_positions():
+                    if not my_player.check_check(enemy_player, self.position, position_checked):
+                        moves_list.append(position_checked)
                     if position_checked in enemy_player.get_all_positions():
                         path = False
                     chain += 1
                 else:
                     path = False
+                if my_player.check_check(enemy_player, self.position, position_checked):
+                    print(f"after this move : {position_checked} the king is in check")
         moves_list = eliminate_off_board(moves_list)
         self.valid_moves = moves_list

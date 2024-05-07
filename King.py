@@ -13,19 +13,32 @@ class King(Piece):
         self.position = new_position
     def update_moved(self):
         self.moved = True
-    def update_valid_moves(self, my_player, enemy_player):#  מחזיר מהלכי המלך רגילים ומהלכי "הצרחה". ההצרחה בודקת רק אם המלך זז  (כי אין לנו מידע נוסף בתוך מחלקה)
+
+    def update_valid_moves(self, my_player, enemy_player):
         regular_moves = []
         castle_moves = self.check_castling(my_player, enemy_player)
+
         # 8 squares to check for kings, they can go one square any direction
         targets = [(1, 0), (1, 1), (1, -1), (-1, 0), (-1, 1), (-1, -1), (0, 1), (0, -1)]
-        for i in range(8):
-            pos_checked = (self.position[0] + targets[i][0], self.position[1] + targets[i][1])
-            if pos_checked not in my_player.get_all_positions() \
-                and not insdie_lst_of_lists(pos_checked, enemy_player.get_all_valid_moves()):
-                regular_moves.append(pos_checked)
-        regular_moves = eliminate_off_board(regular_moves)
-        self.valid_moves = (regular_moves, castle_moves) # איבר ראשון שמחזיר הוא המהלכים הרגילים, האיבר שני זה מהלכי הצרחה פוטנציאלים.
+        for target in targets:
+            pos_checked = (self.position[0] + target[0], self.position[1] + target[1])
 
+            # Check if the position is within the board boundaries
+            if not InBoard(pos_checked):
+                print(f"Position {pos_checked} is outside the board boundaries.")
+                continue
+
+            # Check if the position is not occupied by own piece
+            if pos_checked not in my_player.get_all_positions():
+                print(f"Position {pos_checked} is not occupied by own piece.")
+                # Check if the move doesn't put own king in check
+                if not insdie_lst_of_lists(pos_checked, enemy_player.get_all_valid_moves()):
+                    regular_moves.append(pos_checked)
+                # if insdie_lst_of_lists(pos_checked, enemy_player.get_all_valid_moves()):
+                #     if
+        regular_moves = eliminate_off_board(regular_moves)
+        print("Regular moves after eliminating off-board moves:", regular_moves)
+        self.valid_moves = (regular_moves, castle_moves)
 
     def check_castling(self, my_player, enemy_player):
         """
@@ -41,6 +54,8 @@ class King(Piece):
             off_set = 7
 
         if self.moved or self.position in enemy_player.get_all_valid_moves():
+            return castle_moves
+        if my_player.check:
             return castle_moves
 
         rooks_lst = [rook for rook in my_player.get_pieces_by_type("Rook") if not rook.moved]
