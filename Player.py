@@ -170,12 +170,31 @@ class Player():
 
 
     def check_stale_mate(self):
+        """
+        a function that check if the player is in stale mate
+        :return:
+        """
         if self.check:
             return False
         all_valid_moves = self.get_all_valid_moves()
         if not any(all_valid_moves):
             return True
         return False
+
+    def check_pawn_attacks(self, king, move, enemy_player):
+        original_pos = king.position
+        king.update_position(move)
+        pawns = enemy_player.get_pieces_by_type("Pawn")
+        if self.color == "white":
+            offset = 2
+        else:
+            offset = -2
+        pos_check = [(move[0] + 2, move[1] + offset), (move[0] - 2, move[1] + offset)]
+        pos_check = eliminate_off_board(pos_check)
+        for pawn, pos in zip(pawns, pos_check):
+            if pawn.position == pos:
+                pawn.update_valid_moves(self, enemy_player)
+        king.update_position(original_pos)
 
     def eliminate_all_pieces(self):
         for piece in self.pieces:

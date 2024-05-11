@@ -27,7 +27,40 @@ def insdie_lst_of_lists(position, lst_of_lists):
             if position == item:
                 return True
     return False
+def find_attacking_piece(position, enemy_player):
+    """
 
+    :param position: tuple - represent the position attacked
+    :param enemy_player: a player object of the nemy player
+    :return: the piece that attack the position. if there isn't - return None
+    """
+    for piece in enemy_player.pieces:
+        if piece.valid_moves:
+            if piece.type in ["Pawn", "King"]:
+                for move in piece.valid_moves[0]:
+                    if move == position:
+                        return piece
+            else:
+                for move in piece.valid_moves:
+                    if move == position:
+                        return piece
+    return None
+
+
+def get_opposite_direction_by_value(dict_vectors, current_direction):
+    """
+    Finds the opposite direction in any vector category within dict_vectors.
+
+    :param dict_vectors: Dictionary of direction categories and their vector tuples.
+    :param current_direction: Tuple representing the current direction to find the opposite for.
+    :return: The opposite direction if found, None if not found.
+    """
+    for directions in dict_vectors.values():
+        if current_direction in directions:
+            current_index = directions.index(current_direction)
+            opposite_index = 1 - current_index  # This toggles between 0 and 1 for two-element lists
+            return directions[opposite_index]
+    return None
 def get_key_by_value(d, value):
     """
     a function that searching for a key in a dict by value. return a  singe ( ! ) key.
