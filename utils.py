@@ -72,5 +72,18 @@ def get_key_by_value(d, value):
         if val == value:
             return key
     return None
+def create_move_msg(move_type, old_coords, new_coords):
+    """Create a formatted message for a move."""
+    old_coords_str = f"{old_coords[0]},{old_coords[1]}"
+    new_coords_str = f"{new_coords[0]},{new_coords[1]}"
+    return f"{move_type}?{old_coords_str}?{new_coords_str}"
+def is_legal_move_format(move):
+    try:
+        move_type, from_pos, to_pos = move.split('?')
+        from_pos = tuple(map(int, from_pos.split(',')))
+        to_pos = tuple(map(int, to_pos.split(',')))
+        return True
+    except ValueError:
+        return False
 dict_of_promotions = {"Bishop": (8, 0), "Knight": (8, 1), "Rook": (8, 2), "Queen": (8, 3)}
 print(get_key_by_value(dict_of_promotions, (8, 3)))
