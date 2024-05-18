@@ -203,7 +203,8 @@ class Player():
 
     def draw_pieces(self, screen):
         for piece in self.pieces:
-            piece.draw(screen)
+            if piece:
+                piece.draw(screen)
 
     def draw_captured_pieces(self, screen):
         if self.color == 'white':
@@ -215,12 +216,13 @@ class Player():
             image = captured_piece.capture_drawing()  # Adjusted captured piece size
             screen.blit(image, (offset, 5 + 40 * i))  # Adjusted position
 
-    def add_piece(self,piece): # a  functionfor testing the class and other functions
+    def add_piece(self, piece):  # a function for testing the class and other functions
         self.pieces.append(piece)
-    def add_captured_piece(self,piece):
+    def add_captured_piece(self, piece):
         self.capture_pieces.append(piece)
     def remove_piece(self, piece):
-        self.pieces.remove(piece)
+        if piece in self.pieces:
+            self.pieces.remove(piece)
     def initialize_player(self):
         # Paths to images
         if self.color == 'white':

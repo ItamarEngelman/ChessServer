@@ -116,22 +116,22 @@ class Game:
 
         :return: draw the promotion options of  the player premoting. using lists from the constans file
         """
-        color = 'green'  # Default color, change it to something that makes sense in your context
-        pygame.draw.rect(self.screen, 'dark gray', [800, 0, 200, 420])
-
-        if Pawn.color_promotion == 'white':
-            color = 'white'
-            for i in range(len(white_promotions)):
-                piece = white_promotions[i]
-                index = piece_list.index(piece)
-                screen.blit(white_images[index], (860, 5 + 100 * i))
-        elif Pawn.color_promotion == 'black':
-            color = 'black'
-            for i in range(len(black_promotions)):
-                piece = black_promotions[i]
-                index = piece_list.index(piece)
-                screen.blit(black_images[index], (860, 5 + 100 * i))
-        pygame.draw.rect(screen, color, [800, 0, 200, 420], 8)
+        if self.my_color == self.this_turn_color:
+            color = 'green'  # Default color, change it to something that makes sense in your context
+            pygame.draw.rect(self.screen, 'dark gray', [800, 0, 200, 420])
+            if Pawn.color_promotion == 'white':
+                color = 'white'
+                for i in range(len(white_promotions)):
+                    piece = white_promotions[i]
+                    index = piece_list.index(piece)
+                    screen.blit(white_images[index], (860, 5 + 100 * i))
+            elif Pawn.color_promotion == 'black':
+                color = 'black'
+                for i in range(len(black_promotions)):
+                    piece = black_promotions[i]
+                    index = piece_list.index(piece)
+                    screen.blit(black_images[index], (860, 5 + 100 * i))
+            pygame.draw.rect(screen, color, [800, 0, 200, 420], 8)
 
     def check_promo_select(self, mouse_cords):
         """
@@ -164,7 +164,7 @@ class Game:
         :param other_turn_player: a player object of the rival player of the player currently playing the turn
         :param speacil_piece: true if the self.this_turn_selected_piece is king or pawn and false if not.
         is needed beacise the structure of the valid moves of pawn and king is diffrent from the rest pf the pieces.
-        :return: the first parameter returning is if the game is over and the seacnd is the winnercolor(if no one wen,
+        :return: the first parameter returning is if the game is over and the seacnd is the winner color(if no one wen,
         then return None). Also, change the self.move_taken parameter of the game class.
         """
         if not self.move_taken:
@@ -200,10 +200,10 @@ class Game:
         :param other_turn_player: the rival of the player which  hold the current turn
         :return: nothing, only change parametrs of  the class.
         """
-        self.move_type == "move"
         if Pawn.color_promotion == ('white' or 'black'):  # in order to make sure that the turn that promotion give
             # will be use to promote and not to make other moves
             self.execute_promotion(click_coords, this_turn_player)
+            self.move_type = 'promotion'
         else:
             if click_coords == other_turn_player.get_pieces_by_type("King")[0].position == 'king':
                 self.winner = self.this_turn_color
@@ -212,7 +212,8 @@ class Game:
                 self.move_type = "move"
             if click_coords in this_turn_player.get_all_positions():
                 self.chose_piece(click_coords, this_turn_player, other_turn_player)
-            elif not self.this_turn_selected_piece.type == 'Pawn' and not self.this_turn_selected_piece.type == 'King' and not self.move_taken:
+            elif not self.this_turn_selected_piece.type == 'Pawn' and not self.this_turn_selected_piece.type == 'King'\
+                    and not self.move_taken:
                 self.execute_regular_move(click_coords, this_turn_player, other_turn_player, False)
             else:
                 self.execute_regular_move(click_coords, this_turn_player, other_turn_player, True)
@@ -222,15 +223,19 @@ class Game:
 
     def execute_promotion(self, click_coords, this_turn_player):
         if self.this_turn_selected_piece.type == 'Pawn' and self.this_turn_selected_piece.check_promotion():
-            if click_coords[0] == 8 and click_coords[1] < 4:
+            if click_coords[0] in [8, 9] and click_coords[1] < 4:
                 new_type = get_key_by_value(dict_of_promotions, click_coords)
-                this_turn_player.add_piece(self.this_turn_selected_piece.promotion(new_type))
+                promoted_piece = self.this_turn_selected_piece.promotion(new_type)
+                this_turn_player.add_piece(promoted_piece)
                 this_turn_player.remove_piece(self.this_turn_selected_piece)
                 self.move_taken = True
-                self.last_move_to = self.this_turn_selected_piece.position
-                self.move_type = "move"
+                self.last_move_to = click_coords
+                self.move_type = "promotion"
             else:
                 self.move_taken = False
+                self.move_type = "move"
+                self.last_move_to = click_coords
+
     def execute_castling(self, click_coords, this_turn_player):
         if self.this_turn_selected_piece.type == "King" and not self.move_taken:
             for move in self.this_turn_selected_piece.valid_moves[1]:
@@ -327,6 +332,7 @@ class Game:
             self.pause = False
         else:
             self.pause = True
+        self.move_type = None
         self.this_turn_chose = False
         self.turn_count = self.turn_count + 1
         self.this_turn_color = self.colors[self.turn_count % 2]

@@ -63,13 +63,13 @@ def get_opposite_direction_by_value(dict_vectors, current_direction):
     return None
 def get_key_by_value(d, value):
     """
-    a function that searching for a key in a dict by value. return a  singe ( ! ) key.
-    :param d: a dicinary where the key and the value is
-    :param value: the value of key we are looking for
-    :return: if the key is in  the dict, it return the key. if not, return None
+    A function that searches for a key in a dictionary by value. Returns a single key.
+    :param d: a dictionary where the keys and values are
+    :param value: the value of the key we are looking for
+    :return: if the value is in the dictionary, it returns the key. if not, returns None
     """
-    for key, val in d.items():
-        if val == value:
+    for key, val_list in d.items():
+        if value in val_list:
             return key
     return None
 def create_move_msg(move_type, old_coords, new_coords):
@@ -85,5 +85,12 @@ def is_legal_move_format(move):
         return True
     except ValueError:
         return False
-dict_of_promotions = {"Bishop": (8, 0), "Knight": (8, 1), "Rook": (8, 2), "Queen": (8, 3)}
-print(get_key_by_value(dict_of_promotions, (8, 3)))
+# Example usage:
+dict_of_promotions = {
+    "Bishop": [(8, 0), (9, 0)],
+    "Knight": [(8, 1), (9, 1)],
+    "Rook": [(8, 2), (9, 2)],
+    "Queen": [(8, 3), (9, 3)]
+}
+
+print(get_key_by_value(dict_of_promotions, (8, 3)))  # Output: "Queen"

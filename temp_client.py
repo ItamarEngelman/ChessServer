@@ -35,7 +35,18 @@ def listen_for_moves(client_socket, move_queue):
     except Exception as e:
         print(f"Error receiving data: {e}")
 
-def handle_received_moves(move, game, my_color):
+def process_move_queue(move_queue, game, my_color):
+    if not move_queue.empty():
+        print(f"Move queue: {move_queue}")
+        move = move_queue.get()
+        if move:
+            try:
+                print(f"Processing move from queue: {move}")
+                handle_received_moves(move, game, my_color, move_queue)
+            except Exception as e:
+                print(f"Error processing received move: {e}")
+
+def handle_received_moves(move, game, my_color, move_queue):
     """
     This function handles the received moves and is implemented in the main function.
     :param move: a move of the opponent, from the move queue (built in the listen_for_moves function)
@@ -53,18 +64,25 @@ def handle_received_moves(move, game, my_color):
     move_type, from_pos, to_pos = move.split('?')
     from_pos = tuple(map(int, from_pos.split(',')))
     to_pos = tuple(map(int, to_pos.split(',')))
+
     if move_type == 'quit':
         game.draw_other_player_quit()
         time.sleep(3)
         pygame.quit()
     elif move_type == 'winner':
         pass  # To be added
-    else:
-        if move_type:
-            game.chose_piece(from_pos, this_turn_player, other_turn_player)
-            game.execute_move(to_pos, this_turn_player, other_turn_player)
-            if game.this_turn_selected_piece is not None:
-                game.reset_turn(this_turn_player, other_turn_player)
+    elif move_type == 'move':
+        game.chose_piece(from_pos, this_turn_player, other_turn_player)
+        game.execute_move(to_pos, this_turn_player, other_turn_player)
+        if game.this_turn_selected_piece is not None and game.move_taken:
+            game.reset_turn(this_turn_player, other_turn_player)
+    elif move_type == 'promotion':
+        new_type = get_key_by_value(dict_of_promotions, to_pos)
+        promoted_piece = game.this_turn_selected_piece.promotion(new_type)
+        this_turn_player.add_piece(promoted_piece)
+        this_turn_player.remove_piece(game.this_turn_selected_piece)
+        game.move_taken = True
+        game.reset_turn(this_turn_player, other_turn_player)
 
 def main():
     """
@@ -110,27 +128,20 @@ def main():
             other_turn_player = game.white_player
         if game.should_quit:
             move_msg = create_move_msg('quit', (-1, -1), (-1, -1))
-            client_socket.sendall(move_msg)
+            client_socket.sendall(move_msg.encode())
             pygame.quit()
-        if game.move_taken and game.my_color == game.this_turn_color:
+        if game.move_type is not None and game.my_color == game.this_turn_color:
             move_msg = create_move_msg(game.move_type, game.chosen_piece_pos, game.last_move_to)
+            print(f"move message is : {move_msg}")
             if is_legal_move_format(move_msg):
                 try:
                     print(f"Sending move to server: {move_msg}")
                     client_socket.sendall(move_msg.encode())
-                    game.reset_turn(this_turn_player, other_turn_player)
+                    if game.move_taken:
+                        game.reset_turn(this_turn_player, other_turn_player)
                 except Exception as e:
                     print(f"Error sending move: {e}")
-
-        if not move_queue.empty():
-            print(f"Move queue: {move_queue}")
-            move = move_queue.get()
-            if move:
-                try:
-                    print(f"Processing move from queue: {move}")
-                    handle_received_moves(move, game, my_color)
-                except Exception as e:
-                    print(f"Error processing received move: {e}")
+        process_move_queue(move_queue, game, my_color)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

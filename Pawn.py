@@ -102,9 +102,9 @@ class Pawn(Piece):
                 ep_moves_list.append((piece.position[0], piece.position[1] + new_position_offset))
         ep_moves_list = eliminate_off_board(ep_moves_list)
         return ep_moves_list
+
     def check_promotion(self):
         """
-
         :return: true if the pawn is in the end of the board and  false if it isn't
         """
         if self.color == 'white':
@@ -115,21 +115,33 @@ class Pawn(Piece):
             Pawn.color_promotion = self.color
             return True
         return False
+
     def promotion(self, new_type):
         """
-
-                :param new_type: get the name of the new type wanted
-                :return: an object of the type chosen. the object obtain the same Characteristics except the image and the type. the valid_moves doesn't change
-                it only changed after update_valid_moves. if the new_type is diffrent than known ones - print that error occur and return None
-                """
+        :param new_type: get the name of the new type wanted
+        :return: an object of the type chosen. the object obtain the same Characteristics except the image and the type. the valid_moves doesn't change
+        it only changed after update_valid_moves. if the new_type is different than known ones - print that error occur and return None
+        """
         Pawn.color_promotion = self.color
-        if new_type == "Queen":
-            return Queen(image_path_white_queen, self.position, self.color)
-        if new_type == "Rook":
-            return Rook(image_path_white_rook, self.position, self.color)
-        if new_type == "Bishop":
-            return Bishop(image_path_white_bishop,  self.position, self.color)
-        if new_type == "Knight":
-            return Knight(image_path_white_knight,  self.position, self.color)
-        print("error had occur - problomatic type for promotion ")
+        if self.color == 'white':
+            if new_type == "Queen":
+                return Queen(image_path_white_queen, self.position, self.color)
+            if new_type == "Rook":
+                return Rook(image_path_white_rook, self.position, self.color)
+            if new_type == "Bishop":
+                return Bishop(image_path_white_bishop, self.position, self.color)
+            if new_type == "Knight":
+                return Knight(image_path_white_knight, self.position, self.color)
+            print(f"error had occur - problematic type for promotion. this is the type {new_type}")
+        else:
+            if new_type == "Queen":
+                return Queen(image_path_black_queen, self.position, self.color)
+            if new_type == "Rook":
+                return Rook(image_path_black_rook, self.position, self.color)
+            if new_type == "Bishop":
+                return Bishop(image_path_black_bishop, self.position, self.color)
+            if new_type == "Knight":
+                return Knight(image_path_black_knight, self.position, self.color)
+            print(f"error had occur - problematic type for promotion. this is the type {new_type}")
         return None
+
