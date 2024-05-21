@@ -1,6 +1,8 @@
 import socket
 import threading
-from utils import create_move_msg
+import time
+
+from utils import create_move_msg, is_legal_move_format, is_socket_open
 
 def client_thread(conn, opponent_conn, my_color):
     """
@@ -13,7 +15,8 @@ def client_thread(conn, opponent_conn, my_color):
     """
     try:
         # Send initial color message to the client
-        conn.sendall(my_color.encode())
+        if is_socket_open(conn):
+            conn.sendall(my_color.encode())
         print(f"Sent color {my_color} to client")
 
         while True:
@@ -43,13 +46,22 @@ def client_thread(conn, opponent_conn, my_color):
                     # Debugging: print converted tuples
                     print(f"Converted from_pos_tuple: {from_pos_tuple}")
                     print(f"Converted to_pos_tuple: {to_pos_tuple}")
-
+                    # Server side snippet for handling the quit command
                     formatted_move = create_move_msg(move_type, from_pos_tuple, to_pos_tuple)
 
                     # Debugging: print formatted move
                     print(f"Forwarding move to opponent: {formatted_move}")
-
-                    opponent_conn.sendall(formatted_move.encode())
+                    if is_socket_open(opponent_conn):
+                        opponent_conn.sendall(formatted_move.encode())
+                    if move_type == "quit" or move_type in ['black', 'white']:
+                        time.sleep(5)
+                        print(f"No more data from {my_color} player, closing connections.")
+                        if is_socket_open(conn):
+                            conn.close()
+                        if is_socket_open(opponent_conn):
+                            opponent_conn.sendall(move.encode('utf-8'))
+                            opponent_conn.close()
+                        return
                 else:
                     print(f"Invalid move format received from {my_color}")
             except Exception as e:
@@ -57,14 +69,17 @@ def client_thread(conn, opponent_conn, my_color):
 
     except Exception as e:
         print(f"An error occurred in client_thread for {my_color}: {e}")
+        pass
+
     finally:
-        conn.close()
-        opponent_conn.close()
+        if is_socket_open(conn):
+            conn.close()
+        if is_socket_open(opponent_conn):
+            opponent_conn.close()
 
 def main():
     """
-    The main function of the server. Creates a socket and when the amount of connections equals two, starts a game
-    (we should do it more extensively, when it is even, and then split it into different games but this is in the future).
+    The main function of the server. Creates a socket and when the number of connections is even, starts a new game.
     Each player gets their own thread and so each client thread has its own color.
     :return: None
     """
@@ -76,24 +91,35 @@ def main():
     server_socket.listen(10)
     print("Server started. Waiting for connections...")
 
+    active_games = []  # List to keep track of active game threads
+
     try:
+        connections = []
+
         while True:
-            connections = []
+            conn, addr = server_socket.accept()
+            print(f"Connected by {addr}")
+            connections.append(conn)
 
-            while len(connections) < 2:
-                conn, addr = server_socket.accept()
-                print(f"Connected by {addr}")
-                connections.append(conn)
+            if len(connections) % 2 == 0:
+                # Start a new game with the last two connections
+                player1 = connections[-2]
+                player2 = connections[-1]
+                game_thread1 = threading.Thread(target=client_thread, args=(player1, player2, 'white'), daemon=True)
+                game_thread2 = threading.Thread(target=client_thread, args=(player2, player1, 'black'), daemon=True)
+                game_thread1.start()
+                game_thread2.start()
+                active_games.append((game_thread1, game_thread2))  # Track the game threads
 
-            if len(connections) == 2:
-                player1, player2 = connections
-                threading.Thread(target=client_thread, args=(player1, player2, 'white'), daemon=True).start()
-                threading.Thread(target=client_thread, args=(player2, player1, 'black'), daemon=True).start()
     except KeyboardInterrupt:
         print("Server is shutting down.")
     finally:
         server_socket.close()
         print("Server socket closed.")
+        # Wait for all active game threads to finish
+        for game_thread1, game_thread2 in active_games:
+            game_thread1.join()
+            game_thread2.join()
 
 if __name__ == "__main__":
     main()

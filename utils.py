@@ -1,3 +1,4 @@
+import socket
 def InBoard(position):
     if (position[0] > 7 or position[0] < 0) or (position[1] > 7 or position[1] < 0):
         return False
@@ -92,5 +93,14 @@ dict_of_promotions = {
     "Rook": [(8, 2), (9, 2)],
     "Queen": [(8, 3), (9, 3)]
 }
+def is_socket_open(sock):
+    try:
+        sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
+        return True
+    except socket.error as e:
+        if e.errno == 9:  # errno 9: Bad file descriptor (socket is closed)
+            return False
+        #raise  # Re-raise the exception if it's not due to a closed socket
+        return False
 
 print(get_key_by_value(dict_of_promotions, (8, 3)))  # Output: "Queen"

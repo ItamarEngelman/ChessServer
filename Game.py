@@ -102,14 +102,13 @@ class Game:
                                                             king.position[1] * 100 + 1, 100, 100], 5)
 
     def draw_game_over(self):
-        """
-
-        :param winner: get the color of the winner player.
-        :return: draw a winner measaege
-        """
-        pygame.draw.rect(self.screen, 'black', [200, 200, 400, 70])
-        screen.blit(font.render(f'{self.winner} won the game!', True, 'white'), (210, 210))
-        screen.blit(font.render(f'Press ENTER to Restart!', True, 'white'), (210, 240))
+        if self.game_over:
+            pygame.draw.rect(self.screen, 'black', [200, 200, 400, 70])
+            font = pygame.font.Font(None, 36)  # Ensure you have initialized 'font' correctly
+            self.screen.blit(font.render(f'{self.winner} won the game!', True, 'white'), (210, 210))
+            self.screen.blit(font.render(f'Press ENTER to Restart!', True, 'white'), (210, 240))
+            print(f"Game over screen drawn: winner={self.winner}")
+            pygame.display.flip()  # Update the display to show changes
 
     def draw_promotion(self):
         """
@@ -151,9 +150,9 @@ class Game:
         self.draw_all_pieces()
         self.draw_all_captured_pieces()
         self.draw_check(this_turn_color)
-    def draw_other_player_quite(self,this_turn_player,  other_turn_player):
+    def draw_other_player_quit(self,this_turn_player,  other_turn_player):
         pygame.draw.rect(self.screen, 'black', [200, 200, 400, 70])
-        screen.blit(font.render(f'{other_turn_player.color} disconnected,{this_turn_player.color} won !', True, 'white'), (210, 210))
+        screen.blit(font.render(f'{other_turn_player.color} disconnected, {this_turn_player.color} won !', True, 'white'), (210, 210))
         screen.blit(font.render(f'you may close the window', True, 'white'), (210, 240))
 
     def execute_regular_move(self, click_coords, this_turn_player, other_turn_player, speacil_piece):
@@ -200,26 +199,29 @@ class Game:
         :param other_turn_player: the rival of the player which  hold the current turn
         :return: nothing, only change parametrs of  the class.
         """
-        if Pawn.color_promotion == ('white' or 'black'):  # in order to make sure that the turn that promotion give
-            # will be use to promote and not to make other moves
+        print(
+            f"Executing move: click_coords={click_coords}, this_turn_player={this_turn_player.color}, other_turn_player={other_turn_player.color}")
+        if Pawn.color_promotion in ['white', 'black']:
+            print("Handling promotion")
             self.execute_promotion(click_coords, this_turn_player)
             self.move_type = 'promotion'
         else:
-            if click_coords == other_turn_player.get_pieces_by_type("King")[0].position == 'king':
+            if click_coords == other_turn_player.get_pieces_by_type("King")[0].position:  # delete before sumbitting
                 self.winner = self.this_turn_color
                 self.game_over = True
                 self.move_taken = True
                 self.move_type = "move"
+                print(f"King captured: winner={self.winner}")
             if click_coords in this_turn_player.get_all_positions():
                 self.chose_piece(click_coords, this_turn_player, other_turn_player)
-            elif not self.this_turn_selected_piece.type == 'Pawn' and not self.this_turn_selected_piece.type == 'King'\
-                    and not self.move_taken:
+            elif self.this_turn_selected_piece and self.this_turn_selected_piece.type not in ['Pawn', 'King']:
                 self.execute_regular_move(click_coords, this_turn_player, other_turn_player, False)
             else:
                 self.execute_regular_move(click_coords, this_turn_player, other_turn_player, True)
                 self.execute_promotion(click_coords, this_turn_player)
                 self.execute_en_passant(click_coords, this_turn_player, other_turn_player)
                 self.execute_castling(click_coords, this_turn_player)
+        print(f"Move executed: move_type={self.move_type}, game_over={self.game_over}, winner={self.winner}")
 
     def execute_promotion(self, click_coords, this_turn_player):
         if self.this_turn_selected_piece.type == 'Pawn' and self.this_turn_selected_piece.check_promotion():
@@ -348,48 +350,50 @@ class Game:
         screen.blit(font.render(f'{self.this_turn_color} in stale_mate, it is a tie', True, 'white'), (210, 210))
 
     def run_game(self):
-        # Handle Pygame events and game logic updates here for a single frame
-        timer.tick(fps)  # Control the frame rate
-
-        self.screen.fill('dark gray')  # Clear the screen with a dark gray color
-        self.draw_turn(self.this_turn_color)  # Draw the current turn's game state
+        timer.tick(fps)
+        self.screen.fill('dark gray')
+        self.draw_turn(self.this_turn_color)
 
         if self.this_turn_selected_piece:
             self.draw_valid_moves(self.this_turn_selected_piece)
 
         if Pawn.color_promotion in ['white', 'black']:
-            self.draw_promotion()  # Draw the promotion part on the screen
+            self.draw_promotion()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.should_quit = True  # Signal that we should quit
+                self.should_quit = True
                 self.move_type = "quit"
-                print("Quit event detected, setting should_quit to True")
+                print("Quit event detected")
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if not self.game_over and not self.pause and self.my_color == self.this_turn_color:
                     x_coord, y_coord = event.pos[0] // 100, event.pos[1] // 100
                     click_coords = (x_coord, y_coord)
-                    print(f"Mouse click at {click_coords}")
+                    print(f"Mouse click detected at {click_coords}")
                     self.process_click(click_coords)
 
-        # Draw changes to the display
         pygame.display.flip()
 
     def process_click(self, click_coords):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.should_quit = True  # Signal that we should quit
-                self.move_type = "quit"
-                print("Quit event detected in process_click, setting should_quit to True")
-                return
-
         if self.game_over or self.pause or self.my_color != self.this_turn_color:
             print(
                 f"Ignoring click at {click_coords}: game_over={self.game_over}, pause={self.pause}, my_color={self.my_color}, this_turn_color={self.this_turn_color}")
-            return  # Ignore clicks if the game is over, paused, or not the player's turn
+            return
 
         this_turn_player = self.white_player if self.this_turn_color == 'white' else self.black_player
         other_turn_player = self.black_player if self.this_turn_color == 'white' else self.white_player
+        this_turn_player.update_check(other_turn_player)
+        this_turn_player.update_pawns_valid_moves(other_turn_player)
+
+        if click_coords in [(8, 7), (9, 7)]:
+            print("Forfeit button clicked")
+            self.winner = self.other_turn_color
+            self.game_over = True
+            self.chosen_piece_pos = click_coords
+            self.last_move_to = click_coords
+            self.move_taken = True
+            self.move_type = self.winner
+            return
 
         if not self.this_turn_chose:
             print(f"First click at {click_coords}, selecting piece")
@@ -402,15 +406,16 @@ class Game:
                 self.check_game_status(this_turn_player, other_turn_player)
 
     def check_game_status(self, this_turn_player, other_turn_player):
-        this_turn_player.update_check(other_turn_player)  # Update the check status
+        this_turn_player.update_check(other_turn_player)
+        this_turn_player.update_pawns_valid_moves(other_turn_player)
         if this_turn_player.check_stale_mate():
             print("Stalemate detected")
             self.draw_stale_mate()
             self.game_over = True
+        if self.game_over:
+            self.draw_game_over()
         elif this_turn_player.check:
             if this_turn_player.check_mate(other_turn_player):
                 print(f"Checkmate detected, winner is {other_turn_player.color}")
                 self.game_over = True
-                self.winner = other_turn_player.color
-
-
+                self.winner = self.other_turn_color
