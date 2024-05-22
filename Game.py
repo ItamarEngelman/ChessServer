@@ -1,3 +1,5 @@
+import time
+
 from constants import *
 from Player import *
 from utils import *
@@ -26,6 +28,7 @@ class Game:
         self.chosen_piece_pos = None
         self.should_quit = False
         self.last_move_to = (100, 100)
+        self.want_reset = False
     def draw_all_pieces(self):
         self.white_player.draw_pieces(self.screen)
         self.black_player.draw_pieces(self.screen)
@@ -88,18 +91,16 @@ class Game:
         :param this_turn_color: the  current color of the turn.
         :return: draw a circle around the king squre. red- if white,and blue if black
         """
-        if this_turn_color == 'white' and self.white_player.check:
-            kings = self.white_player.get_pieces_by_type("King")
+        if this_turn_color == 'white':
+            this_turn_player = self.white_player
+        else:
+            this_turn_player = self.black_player
+        if self.my_color == this_turn_color and this_turn_player.check:
+            kings = this_turn_player.get_pieces_by_type("King")
             if kings:
                 king = kings[0]
                 pygame.draw.rect(self.screen, 'dark red', [king.position[0] * 100 + 1,
                                                                 king.position[1] * 100 + 1, 100, 100], 5)
-        elif this_turn_color == 'black' and self.black_player.check:
-            kings = self.white_player.get_pieces_by_type("King")
-            if kings:
-                king = kings[0]
-                pygame.draw.rect(self.screen, 'dark blue', [king.position[0] * 100 + 1,
-                                                            king.position[1] * 100 + 1, 100, 100], 5)
 
     def draw_game_over(self):
         if self.game_over:
@@ -150,11 +151,12 @@ class Game:
         self.draw_all_pieces()
         self.draw_all_captured_pieces()
         self.draw_check(this_turn_color)
+        self.draw_waiting_for_opponent()
     def draw_other_player_quit(self,this_turn_player,  other_turn_player):
         pygame.draw.rect(self.screen, 'black', [200, 200, 400, 70])
         screen.blit(font.render(f'{other_turn_player.color} disconnected, {this_turn_player.color} won !', True, 'white'), (210, 210))
         screen.blit(font.render(f'you may close the window', True, 'white'), (210, 240))
-
+        pygame.display.flip()  # Update the display to show changes
     def execute_regular_move(self, click_coords, this_turn_player, other_turn_player, speacil_piece):
         """
         a  function used in the excute_move function - was seperatedform the main code for convidient.
@@ -363,10 +365,12 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.should_quit = True
+                self.game_over = True
+                self.winner == self.other_turn_color
                 self.move_type = "quit"
                 print("Quit event detected")
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if not self.game_over and not self.pause and self.my_color == self.this_turn_color:
+                if not self.game_over and not self.pause and self.my_color == self.this_turn_color and not self.want_reset:
                     x_coord, y_coord = event.pos[0] // 100, event.pos[1] // 100
                     click_coords = (x_coord, y_coord)
                     print(f"Mouse click detected at {click_coords}")
@@ -419,3 +423,42 @@ class Game:
                 print(f"Checkmate detected, winner is {other_turn_player.color}")
                 self.game_over = True
                 self.winner = self.other_turn_color
+
+    def check_reset(self, duration=3):
+        """
+        Check if the player wants to reset the game by clicking the mouse button or pressing the spacebar.
+        The function will wait for the specified duration (in seconds) to allow player interaction.
+
+        :param duration: Time in seconds to wait for player input.
+        :return: True if reset is requested, False otherwise.
+        """
+        if not self.game_over:
+            return False
+
+        start_time = time.time()
+        while time.time() - start_time < duration:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.should_quit = True
+                    self.game_over = True
+                    self.winner == self.other_turn_color
+                    self.move_type = "quit"
+                    print("Quit event detected")
+                    return False
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                        self.want_reset = True
+                        return True
+            time.sleep(0.1)  # Small delay to avoid high CPU usage
+        return False
+    def draw_waiting_for_opponent(self):
+        """
+        a function that draws the waiting for opponent messeage
+        :return:
+        """
+        if not self.check_reset():
+            return False
+            print(f"not in a reset mode")
+        pygame.draw.rect(self.screen, 'black', [200, 200, 400, 70])
+        font = pygame.font.Font(None, 36)  # Ensure you have initialized 'font' correctly
+        self.screen.blit(font.render(f'waiting for opponent', True, 'white'), (210, 210))
