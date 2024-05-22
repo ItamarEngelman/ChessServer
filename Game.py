@@ -29,6 +29,7 @@ class Game:
         self.should_quit = False
         self.last_move_to = (100, 100)
         self.want_reset = False
+        self.check_quit_temporary = False
     def draw_all_pieces(self):
         self.white_player.draw_pieces(self.screen)
         self.black_player.draw_pieces(self.screen)
@@ -434,7 +435,6 @@ class Game:
         """
         if not self.game_over:
             return False
-
         start_time = time.time()
         while time.time() - start_time < duration:
             for event in pygame.event.get():
