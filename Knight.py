@@ -1,15 +1,17 @@
 from Piece import *
 class Knight(Piece):
-    def __init__(self, image_path, position, color):
+    def __init__(self, position, color):
         """A function to initialize a knight piece
 
         Args:
             image_path (string): local path t
             position (tuple): _description_
             color (string): _description_
-            moved (bool, optional): _description_. Defaults to False.
         """
-        self.image_path = image_path
+        if color == 'white':
+            self.image_path = 'assets/images/white knight.png'
+        else:
+            self.image_path = 'assets/images/black knight.png'
         self.position = position
         self.color = color
         self.moved = False

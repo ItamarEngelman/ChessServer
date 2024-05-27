@@ -1,6 +1,3 @@
-from abc import ABC, abstractmethod
-import pygame
-from Piece import *
 from Queen import *
 from Rook import *
 from Bishop import *
@@ -11,16 +8,17 @@ class Pawn(Piece):
 
     """
     color_promotion = ''
-    def __init__(self, image_path, position, color):
+    def __init__(self, position, color):
         """A function to initialize a pawn piece
 
         Args:
-            image_path (string): local path t
             position (tuple): _description_
             color (string): _description_
-            moved (bool, optional): _description_. Defaults to False.
         """
-        self.image_path = image_path
+        if color == 'white':
+            self.image_path = 'assets/images/white pawn.png'
+        else:
+            self.image_path = 'assets/images/black pawn.png'
         self.position = position
         self.color = color
         self.moved = False
@@ -85,7 +83,6 @@ class Pawn(Piece):
     def check_ep(self, enemy_player):
         """
 
-        :param my_player: player object which represent the player who owns the pawn and playing the current turn
         :param enemy_player: represnt the player object who is againts us
         :return: all the ep moves possible of this pawn
         """
@@ -125,23 +122,23 @@ class Pawn(Piece):
         Pawn.color_promotion = self.color
         if self.color == 'white':
             if new_type == "Queen":
-                return Queen(image_path_white_queen, self.position, self.color)
+                return Queen(self.position, self.color)
             if new_type == "Rook":
-                return Rook(image_path_white_rook, self.position, self.color)
+                return Rook(self.position, self.color)
             if new_type == "Bishop":
-                return Bishop(image_path_white_bishop, self.position, self.color)
+                return Bishop(self.position, self.color)
             if new_type == "Knight":
-                return Knight(image_path_white_knight, self.position, self.color)
+                return Knight(self.position, self.color)
             print(f"error had occur - problematic type for promotion. this is the type {new_type}")
         else:
             if new_type == "Queen":
-                return Queen(image_path_black_queen, self.position, self.color)
+                return Queen(self.position, self.color)
             if new_type == "Rook":
-                return Rook(image_path_black_rook, self.position, self.color)
+                return Rook(self.position, self.color)
             if new_type == "Bishop":
-                return Bishop(image_path_black_bishop, self.position, self.color)
+                return Bishop(self.position, self.color)
             if new_type == "Knight":
-                return Knight(image_path_black_knight, self.position, self.color)
+                return Knight(self.position, self.color)
             print(f"error had occur - problematic type for promotion. this is the type {new_type}")
         return None
 

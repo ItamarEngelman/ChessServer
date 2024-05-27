@@ -1,17 +1,22 @@
 from Piece import *
-import pygame
+
 class Queen(Piece):
-    def __init__(self, image_path, position, color):
-        self.image_path = image_path
+    def __init__(self, position, color):
         self.position = position
-        self.color = color
+        self.color = color  # Set the color attribute first
+        if self.color == 'white':
+            self.image_path = 'assets/images/white queen.png'
+        else:
+            self.image_path = 'assets/images/black queen.png'
         self.moved = False
         self.type = 'Queen'
         self.valid_moves = []
+
     def update_position(self, new_position):
         self.position = new_position
+
     def update_moved(self):
-         self.moved = True
+        self.moved = True
 
     def update_valid_moves(self, my_player, enemy_player):
         moves_list = []
@@ -72,4 +77,3 @@ class Queen(Piece):
 
         moves_list = eliminate_off_board(moves_list)
         self.valid_moves = moves_list
-

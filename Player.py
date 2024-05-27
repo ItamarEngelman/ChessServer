@@ -1,4 +1,3 @@
-import pygame
 from King import King
 from Queen import Queen
 from Rook import Rook
@@ -6,22 +5,31 @@ from Bishop import Bishop
 from Knight import Knight
 from Pawn import Pawn
 from utils import *
+
 class Player():
     def __init__(self, color, pieces, capture_pieces):
         self.color = color
         self.check = False
         self.pieces = pieces
         self.capture_pieces = capture_pieces
+
     def get_all_positions(self):
+        """
+        Get all positions of the player's pieces.
+
+        :return: List of positions of the player's pieces.
+        """
         pieces_positions = []
         for piece in self.pieces:
             pieces_positions.append(piece.position)
         return pieces_positions
+
     def get_all_valid_moves(self):
         """
+        Get all valid moves of the player's pieces.
 
-        :return: the  functions return all the alid moves of the player's pieces except(!!!) the castling and en_passon ones.
-        I could not find a scnerrio where this function needs this information, but pharps I am wrong.
+        :return: Returns all the valid moves of the player's pieces except the castling and en passant ones.
+        I could not find a scenario where this function needs this information, but perhaps I am wrong.
         """
         moves_list = []
         for piece in self.pieces:
@@ -32,22 +40,26 @@ class Player():
                 piece_valid_moves = piece.valid_moves
             moves_list.append(piece_valid_moves)
         return moves_list
+
     def get_pieces_by_type(self, type):
         """
+        Get pieces by their type.
 
-        :param type: get the type  of the pieces needed
-        :return: a list of all the pieces needed which the player own, according to the given type.
+        :param type: The type of the pieces needed.
+        :return: A list of all the pieces the player owns of the given type.
         """
         pieces_needed = []
         for piece in self.pieces:
             if piece.type == type:
                 pieces_needed.append(piece)
         return pieces_needed
+
     def get_piece_by_position(self, position):
         """
+        Get a piece by its position.
 
-        :param position: get a position in the form pf a tuple.
-        :return: return the player piece in that position.  if there isn't one - return None
+        :param position: Position in the form of a tuple.
+        :return: Return the player's piece in that position. If there isn't one, return None.
         """
         for piece in self.pieces:
             if piece.position == position:
@@ -58,24 +70,32 @@ class Player():
         """
         Check if the king is in check by looking at all enemy valid moves.
 
-        :param enemy_player: a player object of the rival player
-        :return: doesn't return anything but updates the check parameter if the king is being under attack.
+        :param enemy_player: A player object of the rival player.
+        :return: Doesn't return anything but updates the check parameter if the king is under attack.
         """
         king = self.get_pieces_by_type("King")[0]
-        check = False  # Use the existing state directly if that's intended
+        check = False
         if self.check:
-            print("king in in check !")
-        if not check:  # Only process if we don't already know king is in check
+            print("King is in check!")
+        if not check:
             for piece_valid_moves in enemy_player.get_all_valid_moves():
                 for move in piece_valid_moves:
                     if king.position == move:
                         check = True
-                        break  # Breaks out of the inner loop only
+                        break
                 if check:
-                    break  # Breaks out of the outer loop if king is in check
+                    break
         self.check = check
 
     def check_check(self, enemy_player, current_pos, new_pos):
+        """
+        Check if a move puts the player's king in check.
+
+        :param enemy_player: The enemy player.
+        :param current_pos: Current position of the piece.
+        :param new_pos: New position of the piece.
+        :return: True if the move puts the king in check, False otherwise.
+        """
         selected_piece = self.get_piece_by_position(current_pos)
         king_pos = self.get_pieces_by_type("King")[0].position
         selected_piece.update_position(new_pos)
@@ -113,10 +133,7 @@ class Player():
                     if captured_piece:
                         enemy_player.add_piece(captured_piece)
                     return True
-        # my_pawns = self.get_pieces_by_type("Pawn")
-        # for pawn in my_pawns:
-        #     for pawn_valid_moves in pawn.valid_moves:
-        #         if
+
         # Check for Knight attacks
         attack_knight_positions = [(1, 2), (1, -2), (2, 1), (2, -1), (-1, 2), (-1, -2), (-2, 1), (-2, -1)]
         enemy_knights = enemy_player.get_pieces_by_type("Knight")
@@ -134,15 +151,18 @@ class Player():
             enemy_player.add_piece(captured_piece)
         selected_piece.update_position(current_pos)
         return False
+
     def update_pawns_valid_moves(self, enemy_player):
         """
-        a function that update the valid moves of all the pawns.
-        :param enemy_player:
-        :return:
+        Update the valid moves of all the pawns.
+
+        :param enemy_player: The enemy player.
+        :return: None
         """
         pawns = self.get_pieces_by_type("Pawn")
         for pawn in pawns:
             pawn.update_valid_moves(self, enemy_player)
+
     def check_mate(self, enemy_player):
         """
         Check if the player is in checkmate.
@@ -158,7 +178,7 @@ class Player():
         if king.valid_moves[0]:
             return False
         for piece in self.pieces:
-            if piece.valid_moves:  # Ensure valid_moves is not empty
+            if piece.valid_moves:
                 if piece.type == "Pawn" or piece.type == "King":
                     if piece.type == "King":
                         for piece_valid_move in piece.valid_moves[0]:
@@ -168,7 +188,6 @@ class Player():
                         for piece_valid_move in piece.valid_moves[0]:
                             if not self.check_check(enemy_player, piece.position, piece_valid_move):
                                 return False
-
                 else:
                     for piece_valid_move in piece.valid_moves:
                         if not self.check_check(enemy_player, piece.position, piece_valid_move):
@@ -179,20 +198,19 @@ class Player():
         else:
             offset = -1
         for pawn in my_pawns:
-            pawns_attacking_moves = [(pawn.position[0] + 1, pawn.position[1] + offset), (pawn.position[0] - 1,
-                                                                                        pawn.position[1] + offset)]
+            pawns_attacking_moves = [(pawn.position[0] + 1, pawn.position[1] + offset), (pawn.position[0] - 1, pawn.position[1] + offset)]
             for move in pawns_attacking_moves:
                 attack_piece = enemy_player.get_piece_by_position(move)
                 if attack_piece is not None and not self.check_check(enemy_player, pawn.position, move):
                     return False
-        print(f"No escape moves found. Checkmate! the {self.color} player is check_mated")
+        print(f"No escape moves found. Checkmate! The {self.color} player is checkmated")
         return True
-
 
     def check_stale_mate(self):
         """
-        a function that check if the player is in stale mate
-        :return:
+        Check if the player is in stalemate.
+
+        :return: True if the player is in stalemate, False otherwise.
         """
         if self.check:
             return False
@@ -201,33 +219,34 @@ class Player():
             return True
         return False
 
-    def check_pawn_attacks(self, king, move, enemy_player):
-        pass
-        # original_pos = king.position
-        # king.update_position(move)
-        # pawns = enemy_player.get_pieces_by_type("Pawn")
-        # if self.color == "white":
-        #     offset = 2
-        # else:
-        #     offset = -2
-        # pos_check = [(move[0] + 2, move[1] + offset), (move[0] - 2, move[1] + offset)]
-        # pos_check = eliminate_off_board(pos_check)
-        # for pawn, pos in zip(pawns, pos_check):
-        #     if pawn.position == pos:
-        #         pawn.update_valid_moves(self, enemy_player)
-        # king.update_position(original_pos)
-
     def eliminate_all_pieces(self):
+        """
+        Eliminate all pieces except the King.
+
+        :return: None
+        """
         for piece in self.pieces:
             if piece.type != "King":
                 self.remove_piece(piece)
 
     def draw_pieces(self, screen):
+        """
+        Draw all the pieces on the screen.
+
+        :param screen: The game screen.
+        :return: None
+        """
         for piece in self.pieces:
             if piece:
                 piece.draw(screen)
 
     def draw_captured_pieces(self, screen):
+        """
+        Draw all captured pieces on the screen.
+
+        :param screen: The game screen.
+        :return: None
+        """
         if self.color == 'white':
             offset = 800  # Adjusted offset
         else:
@@ -237,24 +256,42 @@ class Player():
             image = captured_piece.capture_drawing()  # Adjusted captured piece size
             screen.blit(image, (offset, 5 + 40 * i))  # Adjusted position
 
-    def add_piece(self, piece):  # a function for testing the class and other functions
+    def add_piece(self, piece):
+        """
+        Add a piece to the player's collection.
+
+        :param piece: The piece to add.
+        :return: None
+        """
         self.pieces.append(piece)
+
     def add_captured_piece(self, piece):
+        """
+        Add a captured piece to the player's collection.
+
+        :param piece: The captured piece to add.
+        :return: None
+        """
         self.capture_pieces.append(piece)
+
     def remove_piece(self, piece):
+        """
+        Remove a piece from the player's collection.
+
+        :param piece: The piece to remove.
+        :return: None
+        """
         if piece in self.pieces:
             self.pieces.remove(piece)
+
     def initialize_player(self):
+        """
+        Initialize the player with pieces at their starting positions.
+
+        :return: None
+        """
         # Paths to images
         if self.color == 'white':
-            image_paths = {
-                'King': 'assets/images/white king.png',
-                'Queen': 'assets/images/white queen.png',
-                'Rook': 'assets/images/white rook.png',
-                'Bishop': 'assets/images/white bishop.png',
-                'Knight': 'assets/images/white knight.png',
-                'Pawn': 'assets/images/white pawn.png'
-            }
             starting_positions_white = [
                 (4, 0),  # King
                 (3, 0),  # Queen
@@ -264,15 +301,15 @@ class Player():
                 [(i, 1) for i in range(8)]  # Pawns
             ]
             self.pieces = [
-                               King(image_paths['King'], starting_positions_white[0], 'white'),
-                               Queen(image_paths['Queen'], starting_positions_white[1], 'white'),
-                               Rook(image_paths['Rook'], starting_positions_white[2], 'white'),
-                               Rook(image_paths['Rook'], starting_positions_white[3], 'white'),
-                               Bishop(image_paths['Bishop'], starting_positions_white[4], 'white'),
-                               Bishop(image_paths['Bishop'], starting_positions_white[5], 'white'),
-                               Knight(image_paths['Knight'], starting_positions_white[6], 'white'),
-                               Knight(image_paths['Knight'], starting_positions_white[7], 'white')
-                           ] + [Pawn(image_paths['Pawn'], pos, 'white') for pos in starting_positions_white[8]]
+                               King(starting_positions_white[0], 'white'),
+                               Queen(starting_positions_white[1], 'white'),
+                               Rook(starting_positions_white[2], 'white'),
+                               Rook(starting_positions_white[3], 'white'),
+                               Bishop(starting_positions_white[4], 'white'),
+                               Bishop(starting_positions_white[5], 'white'),
+                               Knight(starting_positions_white[6], 'white'),
+                               Knight(starting_positions_white[7], 'white')
+                           ] + [Pawn(pos, 'white') for pos in starting_positions_white[8]]
             self.capture_pieces = []
         else:
             starting_positions_black = [
@@ -283,63 +320,14 @@ class Player():
                 (1, 7), (6, 7),  # Knights
                 [(i, 6) for i in range(8)]  # Pawns
             ]
-            image_paths_black = {
-                'King': 'assets/images/black king.png',
-                'Queen': 'assets/images/black queen.png',
-                'Rook': 'assets/images/black rook.png',
-                'Bishop': 'assets/images/black bishop.png',
-                'Knight': 'assets/images/black knight.png',
-                'Pawn': 'assets/images/black pawn.png'
-            }
-        # Initialize black pieces
             self.pieces = [
-                               King(image_paths_black['King'], starting_positions_black[0], 'black'),
-                               Queen(image_paths_black['Queen'], starting_positions_black[1], 'black'),
-                               Rook(image_paths_black['Rook'], starting_positions_black[2], 'black'),
-                               Rook(image_paths_black['Rook'], starting_positions_black[3], 'black'),
-                               Bishop(image_paths_black['Bishop'], starting_positions_black[4], 'black'),
-                               Bishop(image_paths_black['Bishop'], starting_positions_black[5], 'black'),
-                               Knight(image_paths_black['Knight'], starting_positions_black[6], 'black'),
-                               Knight(image_paths_black['Knight'], starting_positions_black[7], 'black')
-                           ] + [Pawn(image_paths_black['Pawn'], pos, 'black') for pos in starting_positions_black[8]]
+                               King(starting_positions_black[0], 'black'),
+                               Queen(starting_positions_black[1], 'black'),
+                               Rook(starting_positions_black[2], 'black'),
+                               Rook(starting_positions_black[3], 'black'),
+                               Bishop(starting_positions_black[4], 'black'),
+                               Bishop(starting_positions_black[5], 'black'),
+                               Knight(starting_positions_black[6], 'black'),
+                               Knight(starting_positions_black[7], 'black')
+                           ] + [Pawn(pos, 'black') for pos in starting_positions_black[8]]
             self.capture_pieces = []
-
-
-
-
-    # def check_check_mate(self,enemy_player,  new_pos):
-    #
-    #     """
-    #     a function that implemented if the king is in cheak. it cheack for a move if he  lead to cheackmate (the king is under_attack even after he moves
-    #     and can be captured by the enemy next turn) if all themoves leads to cheack mate, the player lose (in checkmate).
-    #     :param enemy_player: a player object of the  rival player
-    #     :param new_pos: the new position that the king is move to.
-    #     :return: true if the king is under attack when he moved to the new position or not.
-    #     """
-    #
-    #     king = self.get_pieces_by_type("King")[0]
-    #     current_pos = king.position
-    #     king.update_position(new_pos)
-    #     for piece in enemy_player.pieces:
-    #         if king.position == piece.position:
-    #             current_piece = piece
-    #             enemy_player.remove_piece(piece)
-    #             for tool in enemy_player.pieces:
-    #                 tool.update_valid_moves()
-    #             for tool in enemy_player.pieces:
-    #                 for move in tool.get_all_valid_moves():
-    #                     if king.position == move:
-    #                         king.update_position(current_pos)
-    #                         enemy_player.add_piece(current_piece)
-    #                         return True
-    #             king.update_position(current_pos)
-    #             enemy_player.add_piece(current_piece)
-    #             return False
-    #
-    #         else:
-    #             for move in piece.get_all_valid_moves():
-    #                 if king.position == move:
-    #                     king.update_position(current_pos)
-    #                     return True
-    #     king.update_position(current_pos)
-    #     return False

@@ -2,8 +2,11 @@ from Piece import *
 import pygame
 import math
 class King(Piece):
-    def __init__(self, image_path, position, color):
-        self.image_path = image_path
+    def __init__(self, position, color):
+        if color == 'white':
+            self.image_path = 'assets/images/white king.png'
+        else:
+            self.image_path = 'assets/images/black king.png'
         self.position = position
         self.color = color
         self.moved = False

@@ -1,9 +1,11 @@
 from Piece import *
-import pygame
 class Rook(Piece):
 
-    def __init__(self, image_path, position, color):
-        self.image_path = image_path
+    def __init__(self, position, color):
+        if color == 'white':
+            self.image_path = 'assets/images/white rook.png'
+        else:
+            self.image_path = 'assets/images/black rook.png'
         self.position = position
         self.color = color
         self.moved = False
