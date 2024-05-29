@@ -2,7 +2,6 @@ import time
 
 from constants import *
 from Player import *
-from utils import *
 import pygame
 
 class Game:
@@ -78,8 +77,12 @@ class Game:
                 for move in valid_moves:
                     pygame.draw.circle(self.screen, (255, 0, 0), (move[0] * 100 + 50, move[1] * 100 + 50), 5)
                 new_valid_moves = piece.valid_moves[1]
-                for move in new_valid_moves:
-                    pygame.draw.circle(self.screen, (255, 0, 0), (move[0] * 100 + 50, move[1] * 100 + 50), 5)
+                if piece.type == "King":
+                    for move in new_valid_moves:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (move[0][0] * 100 + 50, move[0][1] * 100 + 50), 5)
+                else:
+                    for move in new_valid_moves:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (move[0] * 100 + 50, move[1] * 100 + 50), 5)
 
     def draw_check(self, this_turn_color):
         """

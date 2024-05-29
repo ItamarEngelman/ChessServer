@@ -1,4 +1,5 @@
-from utils import *
+from constants import *
+from utils import  *
 from abc import ABC, abstractmethod
 import pygame
 class Piece():
