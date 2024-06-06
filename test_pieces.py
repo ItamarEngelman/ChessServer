@@ -1,12 +1,12 @@
 import time
 
 import pygame
-from Bishop import Bishop
-from King import King
-from Knight import Knight
-from Rook import Rook
-from Queen import Queen
-from Pawn import Pawn
+from pieces.Bishop import Bishop
+from pieces.King import King
+from pieces.Knight import Knight
+from pieces.Rook import Rook
+from pieces.Queen import Queen
+from pieces.Pawn import Pawn
 
 # Initialize pygame
 pygame.init()

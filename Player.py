@@ -1,9 +1,9 @@
-from King import King
-from Queen import Queen
-from Rook import Rook
-from Bishop import Bishop
-from Knight import Knight
-from Pawn import Pawn
+from pieces.King import King
+from pieces.Queen import Queen
+from pieces.Rook import Rook
+from pieces.Bishop import Bishop
+from pieces.Knight import Knight
+from pieces.Pawn import Pawn
 from utils import *
 
 class Player():
@@ -97,7 +97,10 @@ class Player():
         :return: True if the move puts the king in check, False otherwise.
         """
         selected_piece = self.get_piece_by_position(current_pos)
-        king_pos = self.get_pieces_by_type("King")[0].position
+        if self.get_pieces_by_type("King"):
+            king_pos = self.get_pieces_by_type("King")[0].position
+        else:
+            return False
         selected_piece.update_position(new_pos)
         my_player_positions = self.get_all_positions()
         enemy_player_positions = enemy_player.get_all_positions()
@@ -218,16 +221,6 @@ class Player():
         if not any(all_valid_moves):
             return True
         return False
-
-    def eliminate_all_pieces(self):
-        """
-        Eliminate all pieces except the King.
-
-        :return: None
-        """
-        for piece in self.pieces:
-            if piece.type != "King":
-                self.remove_piece(piece)
 
     def draw_pieces(self, screen):
         """

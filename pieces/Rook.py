@@ -1,21 +1,33 @@
-from Piece import *
+from pieces.Piece import *
+
 class Rook(Piece):
+    """
+    The Rook class represents the rook piece in the chess game, inheriting from the Piece class.
+    """
 
     def __init__(self, position, color):
+        """
+        Initialize a rook piece.
+
+        :param position: tuple, current position of the rook on the board.
+        :param color: string, color of the rook ('white' or 'black').
+        """
         if color == 'white':
-            self.image_path = 'assets/images/white rook.png'
+            image_path = 'assets/images/white rook.png'
         else:
-            self.image_path = 'assets/images/black rook.png'
-        self.position = position
-        self.color = color
-        self.moved = False
-        self.type = 'Rook'
+            image_path = 'assets/images/black rook.png'
+        super().__init__(color, position, image_path)
+        self.type = 'Rook'  # Type of the piece, in this case, 'Rook'
         self.valid_moves = []
-    def update_position(self, new_position):
-        self.position = new_position
-    def update_moved(self):
-        self.moved = True
+
     def update_valid_moves(self, my_player, enemy_player):
+        """
+        Update the valid moves for the rook based on the current game state.
+
+        :param my_player: Player object representing the current player.
+        :param enemy_player: Player object representing the opposing player.
+        :return: None
+        """
         moves_list = []
         for i in range(4):  # down, up, right, left
             path = True

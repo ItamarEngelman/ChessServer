@@ -1,22 +1,14 @@
-from Piece import *
-import pygame
-import math
+from pieces.Piece import *
+
 class King(Piece):
     def __init__(self, position, color):
         if color == 'white':
-            self.image_path = 'assets/images/white king.png'
+            image_path = 'assets/images/white king.png'
         else:
-            self.image_path = 'assets/images/black king.png'
-        self.position = position
-        self.color = color
-        self.moved = False
+            image_path = 'assets/images/black king.png'
+        super().__init__(color, position, image_path)
         self.type = 'King'
         self.valid_moves = ([], [])
-    def update_position(self, new_position):
-        self.position = new_position
-    def update_moved(self):
-        self.moved = True
-
     def update_valid_moves(self, my_player, enemy_player):
         """
         Update the valid moves parameter of the king object.

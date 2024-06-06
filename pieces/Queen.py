@@ -1,23 +1,14 @@
-from Piece import *
+from pieces.Piece import *
 
 class Queen(Piece):
     def __init__(self, position, color):
-        self.position = position
-        self.color = color  # Set the color attribute first
-        if self.color == 'white':
-            self.image_path = 'assets/images/white queen.png'
+        if color == 'white':
+            image_path = 'assets/images/white queen.png'
         else:
-            self.image_path = 'assets/images/black queen.png'
-        self.moved = False
+            image_path = 'assets/images/black queen.png'
+        super().__init__(color, position, image_path)
         self.type = 'Queen'
         self.valid_moves = []
-
-    def update_position(self, new_position):
-        self.position = new_position
-
-    def update_moved(self):
-        self.moved = True
-
     def update_valid_moves(self, my_player, enemy_player):
         moves_list = []
         for i in range(4):  # down, up, right, left
@@ -74,6 +65,5 @@ class Queen(Piece):
                     chain += 1
                 else:
                     path = False
-
         moves_list = eliminate_off_board(moves_list)
         self.valid_moves = moves_list

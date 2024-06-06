@@ -1,23 +1,33 @@
-from constants import *
-from utils import  *
+from utils import *
 from abc import ABC, abstractmethod
 import pygame
-class Piece():
-    color = None
-    image_path = ''
-    position = (-1, -1)
-    type = None
-    moved = False
-    valid_moves = []
-    @abstractmethod
-    def update_position(self, new_position):
-        pass
-    @abstractmethod
-    def update_moved(self):
-        pass
+from abc import ABC, abstractmethod
 
+class Piece(ABC):  # מחלקה אבסטרקטית
+
+    def __init__(self, color, position, image_path):
+        self.color = color
+        self.position = position
+        self.image_path = image_path
+        self.moved = False
+        self.type = None
+        self.valid_moves = []
+
+    def update_position(self, new_position):
+        """
+
+        :param new_position: the new position of the piece
+        :return: void, just change the piece position
+        """
+        self.position = new_position
+    def update_moved(self):
+        """
+
+        :return: change the piece "moved" parameter to true
+        """
+        self.moved = True
     @abstractmethod
-    def update_valid_moves(self):
+    def update_valid_moves(self, my_player, enemy_player):
         pass
 
     def draw(self, screen, piece_size=(65, 65), piece_position_offset=(10, 10)):

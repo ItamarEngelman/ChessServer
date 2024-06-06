@@ -1,13 +1,7 @@
 import time
 
-import pygame
 from Player import Player
-from Pawn import Pawn
-from Rook import Rook
-from Knight import Knight
-from Bishop import Bishop
-from Queen import Queen
-from King import King
+from pieces.King import King
 from constants import *
 # Initialize pygame
 pygame.init()
@@ -27,7 +21,6 @@ print(king.valid_moves)
 
 
 screen.fill('light gray')
-draw_board()
 king.draw(screen)
 rook.draw(screen)
 white_player.draw_pieces(screen)

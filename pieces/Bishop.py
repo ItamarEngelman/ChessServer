@@ -1,21 +1,33 @@
-from Piece import *
+from pieces.Piece import *
 
 class Bishop(Piece):
+    """
+    The Bishop class represents the bishop piece in the chess game, inheriting from the Piece class.
+    """
+
     def __init__(self, position, color):
+        """
+        Initialize a bishop piece.
+
+        :param position: tuple, current position of the bishop on the board.
+        :param color: string, color of the bishop ('white' or 'black').
+        """
         if color == 'white':
-            self.image_path = 'assets/images/white bishop.png'
+            image_path = 'assets/images/white bishop.png'
         else:
-            self.image_path = 'assets/images/black bishop.png'
-        self.position = position
-        self.color = color
-        self.moved = False
-        self.type = 'Bishop'
+            image_path = 'assets/images/black bishop.png'
+        super().__init__(color, position, image_path)
+        self.type = 'Bishop'  # Type of the piece, in this case, 'Bishop'
         self.valid_moves = []
-    def update_position(self, new_position):
-        self.position = new_position
-    def update_moved(self):
-        self.moved = True
+
     def update_valid_moves(self, my_player, enemy_player):
+        """
+        Update the valid moves for the bishop based on the current game state.
+
+        :param my_player: Player object representing the current player.
+        :param enemy_player: Player object representing the opposing player.
+        :return: None
+        """
         moves_list = []
         for i in range(4):  # up-right, up-left, down-right, down-left
             path = True
@@ -44,7 +56,5 @@ class Bishop(Piece):
                     chain += 1
                 else:
                     path = False
-
         moves_list = eliminate_off_board(moves_list)
         self.valid_moves = moves_list
-

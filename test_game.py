@@ -1,15 +1,5 @@
-import logging
-import time
-
-from King import King
-from Queen import Queen
-from Rook import Rook
-from Bishop import Bishop
-from Knight import Knight
-from Pawn import Pawn
 from Player import Player
 from Game import Game
-import pygame
 
 white_player = Player('white', [], [])
 black_player = Player('black', [], [])
