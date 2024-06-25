@@ -51,13 +51,12 @@ class Game:
             else:
                 pygame.draw.rect(self.screen, 'light gray', [700 - (column * 200), row * 100, 100, 100])
 
-        pygame.draw.rect(self.screen, 'gray', [800, HEIGHT - 100, WIDTH - 800, 100])  # Bottom area for forfeit
-        pygame.draw.rect(self.screen, 'black', [800, HEIGHT - 100, WIDTH - 800, 100], 5)  # Thicker black border for forfeit area
+        pygame.draw.rect(self.screen, 'gray', [800, HEIGHT - 100, WIDTH - 800, 100])  
+        pygame.draw.rect(self.screen, 'black', [800, HEIGHT - 100, WIDTH - 800, 100], 5)  
 
         # Draw a line between captured pieces area and the board
-        pygame.draw.rect(self.screen, 'black', [800, HEIGHT - 102, WIDTH - 800, 4])  # Adjusted thickness and position
+        pygame.draw.rect(self.screen, 'black', [800, HEIGHT - 102, WIDTH - 800, 4]) 
 
-        # Adjusted position for "FORFEIT" text
         self.screen.blit(medium_font.render('FORFEIT', True, 'black'), (810, HEIGHT - 90))
 
     def draw_valid_moves(self, piece):
@@ -120,7 +119,7 @@ class Game:
         :return: Draw the promotion options of the player promoting using lists from the constants file.
         """
         if self.my_color == self.this_turn_color:
-            color = 'green'  # Default color, change it to something that makes sense in your context
+            color = 'green'  
             pygame.draw.rect(self.screen, 'dark gray', [800, 0, 200, 420])
             if Pawn.color_promotion == 'white':
                 color = 'white'
@@ -172,8 +171,7 @@ class Game:
         pygame.draw.rect(self.screen, 'black', [200, 200, 400, 70])
         screen.blit(font.render(f'{other_turn_player.color} disconnected, {this_turn_player.color} won!', True, 'white'), (210, 210))
         screen.blit(font.render(f'You may close the window', True, 'white'), (210, 240))
-        pygame.display.flip()  # Update the display to show changes
-
+        pygame.display.flip()  
     def execute_regular_move(self, click_coords, this_turn_player, other_turn_player, special_piece):
         """
         Execute a regular move for the selected piece.
