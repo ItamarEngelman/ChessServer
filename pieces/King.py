@@ -80,14 +80,14 @@ class King(Piece):
         rooks_lst = [rook for rook in my_player.get_pieces_by_type("Rook") if not rook.moved]
 
         for rook in rooks_lst:
-            if self.position[1] != rook.position[1]:  # Ensure rook is in the same row as king
+            if self.position[1] != rook.position[1]: 
                 continue
             clean_path = True
             start = min(self.position[0], rook.position[0]) + 1
             end = max(self.position[0], rook.position[0])
             for pos in range(start, end):
                 pos_checked = (pos, self.position[1])
-                if (pos_checked in my_player.get_all_positions() or  # check if the position is already occupied by a piece
+                if (pos_checked in my_player.get_all_positions() or 
                         pos_checked in enemy_player.get_all_positions()):
                     clean_path = False
                     break
