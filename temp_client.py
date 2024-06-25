@@ -36,10 +36,10 @@ def quit_socket(client_socket, is_pygame_initialized, game, which_side=None):
         else:
             this_turn_player, other_turn_player = game.black_player, game.white_player
         game.draw_other_player_quit(this_turn_player, other_turn_player)
-        time.sleep(3)  # Delay to ensure the player sees the opponent's quit screen
+        time.sleep(3)  
 
     if client_socket:
-        time.sleep(1)  # Delay to ensure message is processed
+        time.sleep(1) 
         try:
             client_socket.close()
         except socket.error as e:
@@ -131,7 +131,7 @@ def handle_received_moves(move, game, my_color, client_socket, is_pygame_initial
     if move_type == 'white' or move_type == 'black':
         game.winner = move_type
         game.game_over = True
-        game.draw_game_over()  # Display game over screen
+        game.draw_game_over()  
         time.sleep(3)
         quit_socket(client_socket, is_pygame_initialized, game, "me")
         game_running_ref[0] = False
@@ -164,7 +164,7 @@ def main():
         return  # Exit if network setup failed
 
     # Initialize encryption
-    key = b'Sixteen byte key'  # Use a proper key generation method
+    key = b'Sixteen byte key'  
     cipher = MyCipher(key)
 
     try:
@@ -178,7 +178,7 @@ def main():
             pygame.quit()
         return
 
-    client_socket.setblocking(0)  # Set back to non-blocking mode after receiving color
+    client_socket.setblocking(0)  
 
     white_player = Player('white', [], [])
     black_player = Player('black', [], [])
@@ -233,7 +233,7 @@ def main():
         if color_won == "white" or color_won == "black":
             game.winner = color_won
             game.game_over = True
-            game.draw_game_over()  # Display game over screen
+            game.draw_game_over()  
             move_msg = create_move_msg(color_won, game.chosen_piece_pos, game.last_move_to)
             nonce, ciphertext, tag = cipher.aes_encryption(move_msg)
             encrypted_message = f"{nonce}|{ciphertext}|{tag}"
