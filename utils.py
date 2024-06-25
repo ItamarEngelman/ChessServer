@@ -59,7 +59,7 @@ def get_opposite_direction_by_value(dict_vectors, current_direction):
     for directions in dict_vectors.values():
         if current_direction in directions:
             current_index = directions.index(current_direction)
-            opposite_index = 1 - current_index  # This toggles between 0 and 1 for two-element lists
+            opposite_index = 1 - current_index  
             return directions[opposite_index]
     return None
 def get_key_by_value(d, value):
@@ -98,9 +98,8 @@ def is_socket_open(sock):
         sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
         return True
     except socket.error as e:
-        if e.errno == 9:  # errno 9: Bad file descriptor (socket is closed)
+        if e.errno == 9: 
             return False
-        #raise  # Re-raise the exception if it's not due to a closed socket
         return False
 
 print(get_key_by_value(dict_of_promotions, (8, 3)))  # Output: "Queen"
