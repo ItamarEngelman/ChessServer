@@ -27,14 +27,12 @@ class King(Piece):
             "Diagonal-left": [(-1, -1), (1, 1)]
         }
 
-        # Iterate over all vectors and directions to determine valid moves
         for vector, directions in dict_vectors.items():
             for direction in directions:
                 pos_checked = (self.position[0] + direction[0], self.position[1] + direction[1])
                 if pos_checked not in my_player.get_all_positions() and not insdie_lst_of_lists(pos_checked,
                                                                                                 enemy_player.get_all_valid_moves()):
                     regular_moves.append(pos_checked)
-                    # Immediately check if this move results in a capture of an attacking piece
                     attacking_piece = find_attacking_piece(pos_checked, enemy_player)
                     if attacking_piece and attacking_piece.type in ["Queen", "Bishop", "Rook"]:
                         # If capturing, assess the impact on the opposite direction
@@ -51,7 +49,7 @@ class King(Piece):
                             if opposite and opposite in regular_moves:
                                 regular_moves.remove(opposite)
                                 print(f"Removed {opposite} due to {attacking_piece.type} threat at {pos_checked}")
-                            break  # Exit the direction loop upon finding a threat
+                            break  
 
         regular_moves = eliminate_off_board(regular_moves)
         for move in regular_moves:
