@@ -106,7 +106,6 @@ class Player():
         enemy_player_positions = enemy_player.get_all_positions()
         captured_piece = None
 
-        # Check for Rook and Bishop attacks
         dict_pieces = {"Rook": [(1, 0), (-1, 0), (0, 1), (0, -1)], "Bishop": [(1, 1), (1, -1), (-1, 1), (-1, -1)]}
         for piece, directions in dict_pieces.items():
             for direction in directions:
@@ -122,7 +121,6 @@ class Player():
                                 enemy_player.add_piece(captured_piece)
                             return True
 
-        # Check for Pawn attacks
         if self.color == 'white':
             offset = 1
         else:
@@ -137,7 +135,6 @@ class Player():
                         enemy_player.add_piece(captured_piece)
                     return True
 
-        # Check for Knight attacks
         attack_knight_positions = [(1, 2), (1, -2), (2, 1), (2, -1), (-1, 2), (-1, -2), (-2, 1), (-2, -1)]
         enemy_knights = enemy_player.get_pieces_by_type("Knight")
         if enemy_knights:
@@ -246,9 +243,8 @@ class Player():
             offset = 900  # Adjusted offset
         for i in range(len(self.capture_pieces)):
             captured_piece = self.capture_pieces[i]
-            image = captured_piece.capture_drawing()  # Adjusted captured piece size
-            screen.blit(image, (offset, 5 + 40 * i))  # Adjusted position
-
+            image = captured_piece.capture_drawing()  
+            screen.blit(image, (offset, 5 + 40 * i))  
     def add_piece(self, piece):
         """
         Add a piece to the player's collection.
@@ -291,7 +287,7 @@ class Player():
                 (0, 0), (7, 0),  # Rooks
                 (2, 0), (5, 0),  # Bishops
                 (1, 0), (6, 0),  # Knights
-                [(i, 1) for i in range(8)]  # Pawns
+                [(i, 1) for i in range(8)]  
             ]
             self.pieces = [
                                King(starting_positions_white[0], 'white'),
@@ -311,7 +307,7 @@ class Player():
                 (0, 7), (7, 7),  # Rooks
                 (2, 7), (5, 7),  # Bishops
                 (1, 7), (6, 7),  # Knights
-                [(i, 6) for i in range(8)]  # Pawns
+                [(i, 6) for i in range(8)] 
             ]
             self.pieces = [
                                King(starting_positions_black[0], 'black'),
