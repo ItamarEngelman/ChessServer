@@ -15,7 +15,7 @@ def setup_network():
     try:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket.connect(('localhost', 65432))
-        client_socket.setblocking(1)  # Temporarily set to blocking mode to receive initial color message
+        client_socket.setblocking(1) 
         return client_socket
     except Exception as e:
         print(f"Error setting up network: {e}")
